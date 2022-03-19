@@ -10,13 +10,12 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Server
-{
+public class Server {
     /* server socket */
     public ServerSocket serverSocket   = null;
 
-    /* the stream we read from the user */
-    public DataInputStream in    =  null;
+    /* the stream we read from the client */
+    public DataInputStream in          =  null;
 
     public Server(int port) throws IOException {
         this.serverSocket = new ServerSocket(port);
@@ -66,6 +65,7 @@ public class Server
 
     /**
      * Used to read the first line of XML, the length of the xml
+     * if the format is wrong, we throw exception
      *
      * @return the first line of the stream
      */
@@ -101,6 +101,8 @@ public class Server
 
     /**
      * Used to read num bytes from client
+     * todo: too many system calls, may improve based on buffer zone
+     *
      * @param num # of bytes to read
      * @return the content
      */
@@ -119,6 +121,7 @@ public class Server
 
     /**
      * Wrapper for write function
+     *
      * @param client the client to pass the information
      * @param content the message to deliver
      */

@@ -7,9 +7,19 @@ import javax.xml.parsers.*;
 import java.io.*;
 
 public class XmlParser {
+
+    /* root element is <create> */
     private final String CREATE_TAG = "create";
+
+    /* root element is <transactions> */
     private final String TRANS_TAG = "transactions";
 
+    /**
+     * Used to process XML received from client
+     *  note the data has not been verified, needs to do that in functions
+     *
+     * @param xml the xml the client sent
+     */
     public void processXML(String xml) throws ParserConfigurationException, IOException, SAXException, IllegalArgumentException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -27,7 +37,7 @@ public class XmlParser {
         if(CREATE_TAG.equals(rootEle)){
             doCreate(doc);
         }else if(TRANS_TAG.equals(rootEle)){// about <transactions> </tran>
-
+            //todo: doTransactions
         }else{
             throw new IllegalArgumentException("wrong xml template");
         }

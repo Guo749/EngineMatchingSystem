@@ -99,6 +99,9 @@ public class DBHelper {
             return "";
     }
 
+    /**
+     * Close the resource
+     */
     public void garbageCollection(){
         try {
             this.conn.close();
