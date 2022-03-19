@@ -1,5 +1,8 @@
 package demo;
 
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -10,25 +13,14 @@ import java.net.Socket;
 public class Server
 {
     /* server socket */
-    private ServerSocket serverSocket   = null;
+    public ServerSocket serverSocket   = null;
 
     /* the stream we read from the user */
-    private DataInputStream in    =  null;
+    public DataInputStream in    =  null;
 
-    public Server(int port) {
-        try {
-            this.serverSocket = new ServerSocket(port);
-            System.out.println("Server started");
-        }catch (IOException e){
-            System.out.println("IO Exception");
-            try {
-                if(this.serverSocket!= null) {
-                    this.serverSocket.close();
-                }
-            } catch (IOException ex) {
-                System.out.println("cannot close server socket");
-            }
-        }
+    public Server(int port) throws IOException {
+        this.serverSocket = new ServerSocket(port);
+        System.out.println("Server started");
     }
 
     /**
@@ -52,14 +44,15 @@ public class Server
                 /* step3: process it accordingly */
                 String xml = readNum(xmlLen);
 
-                processXML(xml);
+                XmlParser xmlParser = new XmlParser();
+                xmlParser.processXML(xml);
 
                 /* step4: write it back the result */
                 writeToClient(client, "what I receive " + xmlLen);
 
-            } catch (IOException | IllegalArgumentException e) {
+            } catch (Exception e){
                 e.printStackTrace();
-            }finally {
+            } finally {
                 if(client != null){
                     try {
                         client.close();
@@ -69,13 +62,6 @@ public class Server
                 }
             }
         }
-    }
-
-    /**
-     * Receive xml from the client, and try to do that accordingly
-     */
-    private void processXML(String xml) {
-        System.out.println("I will do xml");
     }
 
     /**
