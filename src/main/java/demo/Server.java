@@ -10,25 +10,14 @@ import java.net.Socket;
 public class Server
 {
     /* server socket */
-    private ServerSocket serverSocket   = null;
+    public ServerSocket serverSocket   = null;
 
     /* the stream we read from the user */
-    private DataInputStream in    =  null;
+    public DataInputStream in    =  null;
 
-    public Server(int port) {
-        try {
-            this.serverSocket = new ServerSocket(port);
-            System.out.println("Server started");
-        }catch (IOException e){
-            System.out.println("IO Exception");
-            try {
-                if(this.serverSocket!= null) {
-                    this.serverSocket.close();
-                }
-            } catch (IOException ex) {
-                System.out.println("cannot close server socket");
-            }
-        }
+    public Server(int port) throws IOException {
+        this.serverSocket = new ServerSocket(port);
+        System.out.println("Server started");
     }
 
     /**
