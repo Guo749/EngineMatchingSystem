@@ -8,6 +8,8 @@ import java.sql.Statement;
 
 public class DBHelper {
     private Connection conn = null;
+    private final String accountTable = "ACCOUNT";
+    private final String symbolTable  = "SYMBOL";
 
     /**
      * Constructor, used to initialize the connection with db
@@ -16,14 +18,56 @@ public class DBHelper {
         try{
             Class.forName("org.postgresql.Driver");
             this.conn
-                = DriverManager.getConnection("jdbc:postgresql://localhost:5432/testdb", "postgres", "postgres");
+                = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
 
+            this.conn.setAutoCommit(false);
             System.out.println("establish db successfully");
-            //todo: create table
+
+            createAccountTable();
+            createSymbolTable();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * This is used to create symbol table
+     */
+    private void createSymbolTable() throws SQLException {
+        //drop if possible
+        String dropSQL = "DROP TABLE IF EXISTS " + symbolTable + ";";
+        Statement stmt = this.conn.createStatement();
+        stmt.executeUpdate(dropSQL);
+
+        //create it
+        String createSQL =
+            "CREATE TABLE  " + symbolTable +
+            "(ID   INT PRIMARY KEY NOT NULL," +
+            "SHARE TEXT            NOT NULL);"
+            ;
+
+        stmt.executeUpdate(createSQL);
+        this.conn.commit();
+    }
+
+    /**
+     * This is used to create account table
+     */
+    private void createAccountTable() throws SQLException {
+        //drop if possible
+        String dropSQL = "DROP TABLE IF EXISTS " + accountTable + ";";
+        Statement stmt = this.conn.createStatement();
+        stmt.executeUpdate(dropSQL);
+
+        //create it
+        String createSQL =
+            "CREATE TABLE " + accountTable+
+                "(ID     INT PRIMARY KEY NOT NULL," +
+                "balance INT            NOT NULL);"
+            ;
+        stmt.executeUpdate(createSQL);
+        this.conn.commit();
     }
 
     /**

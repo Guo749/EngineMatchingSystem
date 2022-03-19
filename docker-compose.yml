@@ -7,14 +7,16 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-  eng:
-    build: .
-    environment:
-      - TZ=America/New_York
-      - DEBIAN_FRONTEND=noninteractive
-    volumes:
-      - .:/code
     ports:
-      - "12345:12345"
-    depends_on:
-      - db
+      - "5432:5432"
+#  eng:
+#    build: .
+#    environment:
+#      - TZ=America/New_York
+#      - DEBIAN_FRONTEND=noninteractive
+#    volumes:
+#      - .:/code
+#    ports:
+#      - "12345:12345"
+#    depends_on:
+#      - db
