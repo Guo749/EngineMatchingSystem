@@ -9,14 +9,14 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - "5432:5432"
-#  eng:
-#    build: .
-#    environment:
-#      - TZ=America/New_York
-#      - DEBIAN_FRONTEND=noninteractive
-#    volumes:
-#      - .:/code
-#    ports:
-#      - "12345:12345"
-#    depends_on:
-#      - db
+  eng:
+    build: .
+    environment:
+      - TZ=America/New_York
+      - DEBIAN_FRONTEND=noninteractive
+    volumes:
+      - .:/code
+    ports:
+      - "12345:12345"
+    depends_on:
+      - db
