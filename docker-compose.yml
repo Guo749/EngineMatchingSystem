@@ -19,4 +19,8 @@ services:
     ports:
       - "12345:12345"
     depends_on:
+<<<<<<< HEAD
       - db
+=======
+      - db
+>>>>>>> 993ca2e... fix compose.yml
