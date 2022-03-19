@@ -1,5 +1,10 @@
+# Engine For Matching Stock
+Author
+* xz295
+* wg83
+
 # Usage
-usage: ./gradlew run
+usage: sudo docker compose up
 
 
 
