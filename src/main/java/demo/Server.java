@@ -50,7 +50,7 @@ public class Server
                 /* step4: write it back the result */
                 writeToClient(client, "what I receive " + xmlLen);
 
-            } catch (Exception e){
+            } catch (Exception e){//whatever bad happens, we close and regard it as bad reqeust
                 e.printStackTrace();
             } finally {
                 if(client != null){
