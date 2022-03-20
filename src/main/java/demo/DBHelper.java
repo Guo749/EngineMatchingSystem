@@ -1,15 +1,41 @@
 package demo;
 
-import javax.swing.plaf.nimbus.State;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class DBHelper {
+    /* for each db helper, we have one specific connection */
     private Connection conn = null;
-    private final String accountTable = "ACCOUNT";
-    private final String symbolTable  = "SYMBOL";
+
+    /* what's the name of the account table ? */
+    private final static String accountTable = "ACCOUNT";
+
+    /* what's the name of symbol table? */
+    private final static String symbolTable  = "SYMBOL";
+
+    /* initialize when app is running, only run once */
+//    static{
+//        try {
+//            Class.forName("org.postgresql.Driver");
+//            Connection connection
+//                = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
+//
+//            connection.setAutoCommit(false);
+//            System.out.println("establish db successfully");
+//
+//            createAccountTable(connection);
+//            createSymbolTable(connection);
+//
+//            System.out.println("initialize the table successfully ");
+//        }catch (Exception e){
+//            System.out.println("initialize fails");
+//            e.printStackTrace();
+//            System.exit(1);
+//        }
+//    }
+
 
     /**
      * Constructor, used to initialize the connection with db
@@ -22,53 +48,14 @@ public class DBHelper {
 
             this.conn.setAutoCommit(false);
             System.out.println("establish db successfully");
-
-            createAccountTable();
-            createSymbolTable();
-
+            createAccountTable(this.conn);
+            createSymbolTable(this.conn);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * This is used to create symbol table
-     */
-    private void createSymbolTable() throws SQLException {
-        //drop if possible
-        String dropSQL = "DROP TABLE IF EXISTS " + symbolTable + ";";
-        Statement stmt = this.conn.createStatement();
-        stmt.executeUpdate(dropSQL);
 
-        //create it
-        String createSQL =
-            "CREATE TABLE  " + symbolTable +
-            "(ID   INT PRIMARY KEY NOT NULL," +
-            "SHARE TEXT            NOT NULL);"
-            ;
-
-        stmt.executeUpdate(createSQL);
-        this.conn.commit();
-    }
-
-    /**
-     * This is used to create account table
-     */
-    private void createAccountTable() throws SQLException {
-        //drop if possible
-        String dropSQL = "DROP TABLE IF EXISTS " + accountTable + ";";
-        Statement stmt = this.conn.createStatement();
-        stmt.executeUpdate(dropSQL);
-
-        //create it
-        String createSQL =
-            "CREATE TABLE " + accountTable+
-                "(ID     INT PRIMARY KEY NOT NULL," +
-                "balance INT            NOT NULL);"
-            ;
-        stmt.executeUpdate(createSQL);
-        this.conn.commit();
-    }
 
     /**
      * This is used to handle command which is not read-only
@@ -104,9 +91,49 @@ public class DBHelper {
      */
     public void garbageCollection(){
         try {
-            this.conn.close();
+            if(this.conn != null)
+                this.conn.close();
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    /**
+     * This is used to create symbol table
+     */
+    private static void createSymbolTable(Connection connection) throws SQLException {
+        //drop if possible
+        String dropSQL = "DROP TABLE IF EXISTS " + symbolTable + ";";
+        Statement stmt = connection.createStatement();
+        stmt.executeUpdate(dropSQL);
+
+        //create it
+        String createSQL =
+            "CREATE TABLE  " + symbolTable +
+                "(ID   INT PRIMARY KEY NOT NULL," +
+                "SHARE TEXT            NOT NULL);"
+            ;
+
+        stmt.executeUpdate(createSQL);
+        connection.commit();
+    }
+
+    /**
+     * This is used to create account table
+     */
+    private static void createAccountTable(Connection connection) throws SQLException {
+        //drop if possible
+        String dropSQL = "DROP TABLE IF EXISTS " + accountTable + ";";
+        Statement stmt = connection.createStatement();
+        stmt.executeUpdate(dropSQL);
+
+        //create it
+        String createSQL =
+            "CREATE TABLE " + accountTable+
+                "(ID     INT PRIMARY KEY NOT NULL," +
+                "balance INT            NOT NULL);"
+            ;
+        stmt.executeUpdate(createSQL);
+        connection.commit();
     }
 }

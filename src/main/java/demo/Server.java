@@ -20,6 +20,10 @@ public class Server {
     public Server(int port) throws IOException {
         this.serverSocket = new ServerSocket(port);
         System.out.println("Server started");
+
+        //initialize the db
+        DBHelper dbHelper = new DBHelper();
+        dbHelper.garbageCollection();
     }
 
     /**
