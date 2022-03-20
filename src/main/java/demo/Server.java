@@ -23,7 +23,7 @@ public class Server {
 
         //initialize the db
         DBHelper dbHelper = new DBHelper();
-        dbHelper.garbageCollection();
+        DBHelper dbHelper1 = new DBHelper();
     }
 
     /**

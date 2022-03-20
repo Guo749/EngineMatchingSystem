@@ -15,27 +15,7 @@ public class DBHelper {
     /* what's the name of symbol table? */
     private final static String symbolTable  = "SYMBOL";
 
-    /* initialize when app is running, only run once */
-//    static{
-//        try {
-//            Class.forName("org.postgresql.Driver");
-//            Connection connection
-//                = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
-//
-//            connection.setAutoCommit(false);
-//            System.out.println("establish db successfully");
-//
-//            createAccountTable(connection);
-//            createSymbolTable(connection);
-//
-//            System.out.println("initialize the table successfully ");
-//        }catch (Exception e){
-//            System.out.println("initialize fails");
-//            e.printStackTrace();
-//            System.exit(1);
-//        }
-//    }
-
+    private static int counter = 0;
 
     /**
      * Constructor, used to initialize the connection with db
@@ -44,12 +24,17 @@ public class DBHelper {
         try{
             Class.forName("org.postgresql.Driver");
             this.conn
-                = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
+                = DriverManager.getConnection("jdbc:postgresql://db:5432/postgres", "postgres", "postgres");
 
             this.conn.setAutoCommit(false);
             System.out.println("establish db successfully");
-            createAccountTable(this.conn);
-            createSymbolTable(this.conn);
+
+            if(counter == 0) {
+                createAccountTable(this.conn);
+                createSymbolTable(this.conn);
+                counter++;
+                System.out.println("initialize tables OK");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
