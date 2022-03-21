@@ -10,6 +10,8 @@ public class Account {
     @javax.persistence.Basic
     private int balance;
 
+    public Account(){}
+
     public Account(int id, int balance){
         this.id      = id;
         this.balance = balance;
