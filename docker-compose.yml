@@ -1,17 +1,17 @@
 version: "3.9"
 
 services:
-  eng:
-    build: .
-    environment:
-      - TZ=America/New_York
-      - DEBIAN_FRONTEND=noninteractive
-    volumes:
-      - .:/code
-    ports:
-      - "12345:12345"
-    depends_on:
-      - db
+#  eng:
+#    build: .
+#    environment:
+#      - TZ=America/New_York
+#      - DEBIAN_FRONTEND=noninteractive
+#    volumes:
+#      - .:/code
+#    ports:
+#      - "12345:12345"
+#    depends_on:
+#      - db
 
   db:
     image: postgres
