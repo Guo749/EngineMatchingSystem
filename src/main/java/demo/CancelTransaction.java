@@ -2,10 +2,10 @@ package demo;
 
 import org.w3c.dom.Element;
 
-public class QueryTransaction implements Transaction {
+public class CancelTransaction implements Transaction {
     private String accountId;
 
-    public QueryTransaction(String accountId) {
+    public CancelTransaction(String accountId) {
         this.accountId = accountId;
     }
 

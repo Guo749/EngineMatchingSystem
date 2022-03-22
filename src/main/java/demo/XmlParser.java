@@ -5,6 +5,7 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.*;
 import java.io.*;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -180,10 +181,26 @@ public class XmlParser {
             Node childNode = childNodes.item(i);
             if (childNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element childElement = (Element) childNode;
+                Transaction transaction = null;
                 switch (childElement.getNodeName()) {
-
+                    case "order" -> {
+                        transaction = new OrderTransaction(accountID);
+                    }
+                    case "query" -> {
+                        transaction = new QueryTransaction(accountID);
+                    }
+                    case "cancel" -> {
+                        transaction = new CancelTransaction(accountID);
+                    }
+                    default -> throw new IllegalArgumentException("Transaction type " + childElement.getNodeName() + " is invalid");
                 }
+                transaction.parse(childElement);
+                transactionList.add(transaction);
             }
+        }
+        for (Transaction transaction : transactionList) {
+            // TODO: Perhaps execute can return the result
+            transaction.execute();
         }
     }
 }

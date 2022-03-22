@@ -25,6 +25,7 @@ public class Database {
 
                 //todo: add account, order info
                 cfg.addAnnotatedClass(Account.class);
+                cfg.addAnnotatedClass(Order.class);
                 org.hibernate.boot.registry.StandardServiceRegistryBuilder builder =
                     new org.hibernate.boot.registry.StandardServiceRegistryBuilder().applySettings(cfg.getProperties());
                 return cfg.buildSessionFactory(builder.build());
@@ -58,20 +59,35 @@ public class Database {
     }
 
     /**
-     * Test Method, used to print all accounts in the database
+     * Used to add an order to the database
+     * @param order
      */
-    public static void getAllAccounts() {
+    public static void createOrder(Order order) {
+        try {
+            Session session = sessionFactory.openSession();
+            org.hibernate.Transaction tx = session.beginTransaction();
+            session.save(order);
+            tx.commit();
+            session.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Test Method, used to print all orders in the database
+     */
+    public static List<Order> getAllOrders() {
         try {
             Session session = sessionFactory.openSession();
             CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<Account> criteria = builder.createQuery(Account.class);
-            criteria.from(Account.class);
-            List<Account> accountList = session.createQuery(criteria).getResultList();
-            for (Account account : accountList) {
-                System.out.println(account.getId());
-            }
+            CriteriaQuery<Order> criteria = builder.createQuery(Order.class);
+            criteria.from(Order.class);
+            return session.createQuery(criteria).getResultList();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
     }
 }

@@ -24,6 +24,7 @@
         <property name="format_sql">false</property> <!-- Show SQL formatted -->
 
         <mapping class="demo.Account"/>
+        <mapping class="demo.ExchangeOrder"/>
 
     </session-factory>
 </hibernate-configuration>
