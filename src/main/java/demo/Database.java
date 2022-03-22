@@ -1,8 +1,13 @@
 package demo;
 
+import java.util.List;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 
 
 public class Database {
@@ -20,6 +25,7 @@ public class Database {
 
                 //todo: add account, order info
                 cfg.addAnnotatedClass(Account.class);
+                cfg.addAnnotatedClass(Order.class);
                 org.hibernate.boot.registry.StandardServiceRegistryBuilder builder =
                     new org.hibernate.boot.registry.StandardServiceRegistryBuilder().applySettings(cfg.getProperties());
                 return cfg.buildSessionFactory(builder.build());
@@ -50,5 +56,38 @@ public class Database {
         }catch (Exception e){
 
         }
+    }
+
+    /**
+     * Used to add an order to the database
+     * @param order is the order to add to the database
+     */
+    public static void addOrder(Order order) {
+        try {
+            Session session = sessionFactory.openSession();
+            org.hibernate.Transaction tx = session.beginTransaction();
+            session.save(order);
+            tx.commit();
+            session.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Test Method, used to print all orders in the database
+     */
+    public static List<Order> getAllOrders() {
+        try {
+            Session session = sessionFactory.openSession();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Order> criteria = builder.createQuery(Order.class);
+            criteria.from(Order.class);
+            return session.createQuery(criteria).getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

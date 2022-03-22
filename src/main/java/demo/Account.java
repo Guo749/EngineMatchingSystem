@@ -16,4 +16,8 @@ public class Account {
         this.id      = id;
         this.balance = balance;
     }
+
+    public int getId() {
+        return id;
+    }
 }

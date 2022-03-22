@@ -5,6 +5,9 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.*;
 import java.io.*;
+import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class XmlParser {
 
@@ -37,7 +40,12 @@ public class XmlParser {
         if(CREATE_TAG.equals(rootEle)){
             doCreate(doc);
         }else if(TRANS_TAG.equals(rootEle)){// about <transactions> </tran>
-            //todo: doTransactions
+            List<Transaction> transactionList = parseTransactions(doc);
+            // TODO: Should this part (execute transactions) be put into the Server class - run method?
+            for (Transaction transaction : transactionList) {
+                // TODO: Perhaps execute can return the result
+                transaction.execute();
+            }
         }else{
             throw new IllegalArgumentException("wrong xml template");
         }
@@ -47,6 +55,8 @@ public class XmlParser {
      * Used to handle create request
      *
      * @param doc the DOM object for this request
+     * TODO: Not sure whether the processing order matters: If there is a symbol creation for account 123456 (originally
+     *            not exist), and account 123456 is created after this symbol creation, the below code will allow it.
      */
     private void doCreate(Document doc) throws IllegalArgumentException{
         NodeList accountList = doc.getElementsByTagName("account");
@@ -152,5 +162,69 @@ public class XmlParser {
         }
 
         dbHelper.garbageCollection();
+    }
+
+    /**
+     * Parse transactions
+     * @param doc is the DOM object for this request
+     */
+    public List<Transaction> parseTransactions(Document doc) {
+        System.out.println("Transactions found");
+        Element element = doc.getDocumentElement();
+        // TODO: Go to the database to check whether the account id exists
+        String accountID = checkHasAttributeAndGetIt(element, "id");
+
+        NodeList childNodes = element.getChildNodes();
+        List<Transaction> transactionList = new ArrayList<Transaction>();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node childNode = childNodes.item(i);
+            if (childNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element childElement = (Element) childNode;
+                Transaction transaction = null;
+                switch (childElement.getNodeName()) {
+                    case "order" -> transaction = parseOrderTransaction(accountID, childElement);
+                    case "query" -> transaction = parseQueryTransaction(accountID, childElement);
+                    case "cancel" -> transaction = parseCancelTransaction(accountID, childElement);
+                    default -> throw new IllegalArgumentException("Transaction type " + childElement.getNodeName() + " is invalid");
+                }
+                transactionList.add(transaction);
+            }
+        }
+
+        if (transactionList.size() <= 0) {
+            throw new IllegalArgumentException("There must be at least one child inside the transactions tag");
+        }
+        return transactionList;
+    }
+
+    private OrderTransaction parseOrderTransaction(String accountId, Element element) {
+        String sym = checkHasAttributeAndGetIt(element, "sym");
+        String amountStr = checkHasAttributeAndGetIt(element, "amount");
+        String limitStr = checkHasAttributeAndGetIt(element, "limit");
+        try {
+            double amount = Float.parseFloat(amountStr);
+            double limit = Float.parseFloat(limitStr);
+            return new OrderTransaction(accountId, sym, amount, limit);
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException("amount or limit value is invalid");
+        }
+    }
+
+    private QueryTransaction parseQueryTransaction(String accountId, Element element) {
+        return new QueryTransaction(accountId);
+    }
+
+    private CancelTransaction parseCancelTransaction(String accountId, Element element) {
+        return new CancelTransaction(accountId);
+    }
+
+    private String checkHasAttributeAndGetIt(Element element, String attribute) {
+        if (element.hasAttribute(attribute)) {
+            return element.getAttribute(attribute);
+        }
+        else {
+            throw new IllegalArgumentException("Attribute " + attribute + " expected");
+        }
     }
 }
