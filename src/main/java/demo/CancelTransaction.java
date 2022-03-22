@@ -10,11 +10,6 @@ public class CancelTransaction implements Transaction {
     }
 
     @Override
-    public void parse(Element element) {
-
-    }
-
-    @Override
     public void execute() {
 
     }

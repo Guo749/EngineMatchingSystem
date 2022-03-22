@@ -60,9 +60,9 @@ public class Database {
 
     /**
      * Used to add an order to the database
-     * @param order
+     * @param order is the order to add to the database
      */
-    public static void createOrder(Order order) {
+    public static void addOrder(Order order) {
         try {
             Session session = sessionFactory.openSession();
             org.hibernate.Transaction tx = session.beginTransaction();
