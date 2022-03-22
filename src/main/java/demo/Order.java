@@ -14,10 +14,10 @@ public class Order {
     private String sym;
 
     @javax.persistence.Basic
-    private int amount;
+    private float amount;
 
     @javax.persistence.Basic
-    private int limit;
+    private float priceLimit;
 
     @javax.persistence.Basic
     private OrderStatus status;
@@ -28,21 +28,22 @@ public class Order {
 
     public Order() {}
 
-    public Order(String sym, int amount, int limit) {
+    public Order(String sym, int amount, int priceLimit) {
         this.sym = sym;
         this.amount = amount;
-        this.limit = limit;
+        this.priceLimit = priceLimit;
+        this.status = OrderStatus.OPEN;
     }
 
     public String getSym() {
         return sym;
     }
 
-    public int getAmount() {
+    public float getAmount() {
         return amount;
     }
 
-    public int getLimit() {
-        return limit;
+    public float getPriceLimit() {
+        return priceLimit;
     }
 }

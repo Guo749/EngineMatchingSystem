@@ -18,7 +18,7 @@ public class DatabaseTest {
         Database.createOrder(new Order("ABC", 166, 43));
         List<Order> orders = Database.getAllOrders();
         for (Order order : orders) {
-            System.out.println(order.getSym() + order.getAmount() + order.getLimit());
+            System.out.println(order.getSym() + " " + order.getAmount() + " " + order.getPriceLimit());
         }
     }
 }
