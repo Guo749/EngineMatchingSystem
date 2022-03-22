@@ -11,7 +11,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
-    // TODO: Perhaps need an additional transaction ID
+    // TODO: Perhaps make it self-referential
+    @javax.persistence.Basic
+    private int transactionId;
 
     @javax.persistence.Basic
     private String sym;
@@ -37,6 +39,10 @@ public class Order {
         this.priceLimit = priceLimit;
         this.status = OrderStatus.OPEN;
         this.time = Instant.now().getEpochSecond();
+    }
+
+    public int getTransactionId() {
+        return transactionId;
     }
 
     public String getSym() {
