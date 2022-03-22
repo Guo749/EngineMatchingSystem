@@ -14,4 +14,11 @@ public class XmlParserTest {
         XmlParser xmlParser = new XmlParser();
         xmlParser.processXML(xml);
     }
+
+    @Test
+    public void testParseTransactions() throws ParserConfigurationException, IOException, SAXException {
+        String xml = "<?xml version = \"1.0\"?> <transactions id=\"1234\"> </transactions>";
+        XmlParser xmlParser = new XmlParser();
+        xmlParser.processXML(xml);
+    }
 }

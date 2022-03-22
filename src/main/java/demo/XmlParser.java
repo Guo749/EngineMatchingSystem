@@ -5,6 +5,8 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.*;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class XmlParser {
 
@@ -37,7 +39,7 @@ public class XmlParser {
         if(CREATE_TAG.equals(rootEle)){
             doCreate(doc);
         }else if(TRANS_TAG.equals(rootEle)){// about <transactions> </tran>
-            //todo: doTransactions
+            parseTransactions(doc);
         }else{
             throw new IllegalArgumentException("wrong xml template");
         }
@@ -47,6 +49,8 @@ public class XmlParser {
      * Used to handle create request
      *
      * @param doc the DOM object for this request
+     * TODO: Not sure whether the processing order matters: If there is a symbol creation for account 123456 (originally
+     *            not exist), and account 123456 is created after this symbol creation, the below code will allow it.
      */
     private void doCreate(Document doc) throws IllegalArgumentException{
         NodeList accountList = doc.getElementsByTagName("account");
@@ -152,5 +156,34 @@ public class XmlParser {
         }
 
         dbHelper.garbageCollection();
+    }
+
+    /**
+     * Parse transactions.
+     * TODO: Perhaps return a response?
+     * @param doc is the DOM object for this request
+     */
+    private void parseTransactions(Document doc) {
+        System.out.println("Transactions found");
+        Element element = doc.getDocumentElement();
+        String accountID = null;
+        if (element.hasAttribute("id")) {
+            accountID = element.getAttribute("id");
+            // TODO: Go to the database to check whether the account id exists
+        }
+        else {
+            throw new IllegalArgumentException("transactions tag does not contain account id");
+        }
+        NodeList childNodes = element.getChildNodes();
+        List<Transaction> transactionList = new ArrayList<Transaction>();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node childNode = childNodes.item(i);
+            if (childNode.getNodeType() == Node.ELEMENT_NODE) {
+                Element childElement = (Element) childNode;
+                switch (childElement.getNodeName()) {
+
+                }
+            }
+        }
     }
 }

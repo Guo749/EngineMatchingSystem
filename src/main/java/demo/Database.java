@@ -1,8 +1,13 @@
 package demo;
 
+import java.util.List;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
 
 
 public class Database {
@@ -49,6 +54,24 @@ public class Database {
             session.close();
         }catch (Exception e){
 
+        }
+    }
+
+    /**
+     * Test Method, used to print all accounts in the database
+     */
+    public static void getAllAccounts() {
+        try {
+            Session session = sessionFactory.openSession();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Account> criteria = builder.createQuery(Account.class);
+            criteria.from(Account.class);
+            List<Account> accountList = session.createQuery(criteria).getResultList();
+            for (Account account : accountList) {
+                System.out.println(account.getId());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
