@@ -3,10 +3,10 @@ package demo;
 import org.w3c.dom.Element;
 
 public class OrderTransaction implements Transaction {
-    private String accountId;
+    private int accountId;
     private Order order;
 
-    public OrderTransaction(String accountId, String sym, double amount, double priceLimit) {
+    public OrderTransaction(int accountId, String sym, double amount, double priceLimit) {
         this.accountId = accountId;
         this.order = new Order(sym, amount, priceLimit);
     }
@@ -16,7 +16,7 @@ public class OrderTransaction implements Transaction {
         Database.addOrder(order);
     }
 
-    public String getAccountId() {
+    public int getAccountId() {
         return accountId;
     }
 

@@ -23,8 +23,41 @@ public class XmlParserTest {
     }
 
     @Test
-    public void testParseTransactions() throws ParserConfigurationException, IOException, SAXException {
+    public void testParseOrderTransactions() throws ParserConfigurationException, IOException, SAXException {
         String xml = "<?xml version = \"1.0\"?> <transactions id=\"1234\"> <order sym=\"SPY\" amount=\"100\" limit=\"145.67\"/> </transactions>";
+        List<Transaction> transactionList = getTransactionList(xml);
+
+        assertEquals(1, transactionList.size());
+        assertEquals(OrderTransaction.class, transactionList.get(0).getClass());
+        Order order = ((OrderTransaction) transactionList.get(0)).getOrder();
+        assertEquals("SPY", order.getSym());
+        assertEquals(100, order.getAmount(), 0.001);
+        assertEquals(145.67, order.getPriceLimit(), 0.001);
+
+    }
+
+    @Test
+    public void testParseQueryAndCancelTransactions() throws ParserConfigurationException, IOException, SAXException {
+        String xml = "<?xml version = \"1.0\"?> <transactions id=\"1234\"> " +
+                "<order sym=\"SPY\" amount=\"100\" limit=\"145.67\"/>" +
+                "<query id=\"853\"/>" +
+                "<cancel id=\"6996\"/>" +
+                " </transactions>";
+        List<Transaction> transactionList = getTransactionList(xml);
+        assertEquals(3, transactionList.size());
+
+        assertEquals(QueryTransaction.class, transactionList.get(1).getClass());
+        QueryTransaction queryTransaction = (QueryTransaction) transactionList.get(1);
+        assertEquals(1234, queryTransaction.getAccountId());
+        assertEquals(853, queryTransaction.getTransactionId());
+
+        assertEquals(CancelTransaction.class, transactionList.get(2).getClass());
+        CancelTransaction cancelTransaction = (CancelTransaction) transactionList.get(2);
+        assertEquals(1234, cancelTransaction.getAccountId());
+        assertEquals(6996, cancelTransaction.getTransactionId());
+    }
+
+    private List<Transaction> getTransactionList(String xml) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
 
@@ -36,13 +69,6 @@ public class XmlParserTest {
         doc.getDocumentElement().normalize();
 
         XmlParser xmlParser = new XmlParser();
-        List<Transaction> transactionList = xmlParser.parseTransactions(doc);
-
-        assertEquals(1, transactionList.size());
-        assertEquals(OrderTransaction.class, transactionList.get(0).getClass());
-        Order order = ((OrderTransaction) transactionList.get(0)).getOrder();
-        assertEquals("SPY", order.getSym());
-        assertEquals(100, order.getAmount(), 0.001);
-        assertEquals(145.67, order.getPriceLimit(), 0.001);
+        return xmlParser.parseTransactions(doc);
     }
 }

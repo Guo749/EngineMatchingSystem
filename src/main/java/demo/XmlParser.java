@@ -168,7 +168,14 @@ public class XmlParser {
         System.out.println("Transactions found");
         Element element = doc.getDocumentElement();
         // TODO: Go to the database to check whether the account id exists
-        String accountID = checkHasAttributeAndGetIt(element, "id");
+        String accountIDStr = checkHasAttributeAndGetIt(element, "id");
+        Integer accountID = null;
+        try {
+            accountID = Integer.parseInt(accountIDStr);
+        }
+        catch (Exception e) {
+            throw new InvalidParameterException("Account ID is not an integer");
+        }
 
         NodeList childNodes = element.getChildNodes();
         List<Transaction> transactionList = new ArrayList<Transaction>();
@@ -197,7 +204,7 @@ public class XmlParser {
         return transactionList;
     }
 
-    private OrderTransaction parseOrderTransaction(String accountId, Element element) {
+    private OrderTransaction parseOrderTransaction(int accountId, Element element) {
         String sym = checkHasAttributeAndGetIt(element, "sym");
         String amountStr = checkHasAttributeAndGetIt(element, "amount");
         String limitStr = checkHasAttributeAndGetIt(element, "limit");
@@ -207,16 +214,32 @@ public class XmlParser {
             return new OrderTransaction(accountId, sym, amount, limit);
         }
         catch (Exception e) {
-            throw new IllegalArgumentException("amount or limit value is invalid");
+            throw new IllegalArgumentException("Invalid amount or limit value");
         }
     }
 
-    private QueryTransaction parseQueryTransaction(String accountId, Element element) {
-        return new QueryTransaction(accountId);
+    private QueryTransaction parseQueryTransaction(int accountId, Element element) {
+        String transactionIdStr = checkHasAttributeAndGetIt(element, "id");
+        // TODO: Check whether this id exists in the database
+        try {
+            int transactionId = Integer.parseInt(transactionIdStr);
+            return new QueryTransaction(accountId, transactionId);
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException("Invalid transaction id");
+        }
     }
 
-    private CancelTransaction parseCancelTransaction(String accountId, Element element) {
-        return new CancelTransaction(accountId);
+    private CancelTransaction parseCancelTransaction(int accountId, Element element) {
+        String transactionIdStr = checkHasAttributeAndGetIt(element, "id");
+        // TODO: Check whether this id exists in the database
+        try {
+            int transactionId = Integer.parseInt(transactionIdStr);
+            return new CancelTransaction(accountId, transactionId);
+        }
+        catch (Exception e) {
+            throw new IllegalArgumentException("Invalid transaction id");
+        }
     }
 
     private String checkHasAttributeAndGetIt(Element element, String attribute) {
