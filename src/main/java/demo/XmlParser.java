@@ -40,12 +40,8 @@ public class XmlParser {
         if(CREATE_TAG.equals(rootEle)){
             doCreate(doc);
         }else if(TRANS_TAG.equals(rootEle)){// about <transactions> </tran>
+            // TODO: Should this be parseAndExecuteTransactions and return the execution results?
             List<Transaction> transactionList = parseTransactions(doc);
-            // TODO: Should this part (execute transactions) be put into the Server class - run method?
-            for (Transaction transaction : transactionList) {
-                // TODO: Perhaps execute can return the result
-                transaction.execute();
-            }
         }else{
             throw new IllegalArgumentException("wrong xml template");
         }
@@ -188,6 +184,10 @@ public class XmlParser {
                     default -> throw new IllegalArgumentException("Transaction type " + childElement.getNodeName() + " is invalid");
                 }
                 transactionList.add(transaction);
+                // TODO: Should this part (execute transactions) be put into the Server class - run method? But
+                //      how to return error messages in order if it is in the Server class?
+                // TODO: Perhaps execute can return the result
+                transaction.execute();
             }
         }
 
