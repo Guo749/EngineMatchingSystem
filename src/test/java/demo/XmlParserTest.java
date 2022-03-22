@@ -33,7 +33,6 @@ public class XmlParserTest {
         assertEquals("SPY", order.getSym());
         assertEquals(100, order.getAmount(), 0.001);
         assertEquals(145.67, order.getPriceLimit(), 0.001);
-
     }
 
     @Test
