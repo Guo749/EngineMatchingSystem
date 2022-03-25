@@ -1,5 +1,6 @@
 plugins {
     id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.12'
 }
 
 group 'org.example'
@@ -18,7 +19,9 @@ dependencies {
     implementation group: 'org.hibernate.javax.persistence', name: 'hibernate-jpa-2.1-api', version: '1.0.0.Final'
 }
 
-
+javafx {
+    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.media' ]
+}
 
 application {
     mainClass = 'demo.App'

@@ -1,8 +1,9 @@
 package demo;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
+import javax.persistence.*;
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 
 @javax.persistence.Entity
 @javax.persistence.Table(name="orders")
@@ -11,24 +12,29 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
-    // TODO: Perhaps make it self-referential
-    @javax.persistence.Basic
-    private int transactionId;
+    //TODO: Add a foreign key account ID
 
-    @javax.persistence.Basic
+    @ManyToOne(cascade = {CascadeType.ALL})
+    @JoinColumn(name = "parent_order_id")
+    private Order parentOrder;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "parentOrder")
+    private Set<Order> childOrders = new HashSet<Order>();
+
+    @Basic
     private String sym;
 
-    @javax.persistence.Basic
+    @Basic
     private double amount;
 
-    @javax.persistence.Basic
+    @Basic
     private double priceLimit;
 
-    @javax.persistence.Basic
+    @Basic
     private OrderStatus status;
 
     // Seconds since the epoch
-    @javax.persistence.Basic
+    @Basic
     private long time;
 
     public Order() {}
@@ -41,16 +47,41 @@ public class Order {
         this.time = Instant.now().getEpochSecond();
     }
 
-    public int getTransactionId() {
-        return transactionId;
+    public void addChildOrder(Order childOrder) {
+        this.childOrders.add(childOrder);
+        childOrder.parentOrder = this;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setParentOrder(Order parentOrder) {
+        this.parentOrder = parentOrder;
+    }
+
+    public Order getParentOrder() {
+        return parentOrder;
+    }
+
+    public Set<Order> getChildOrders() {
+        return childOrders;
     }
 
     public String getSym() {
         return sym;
     }
 
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
     public double getAmount() {
         return amount;
+    }
+
+    public void setPriceLimit(double priceLimit) {
+        this.priceLimit = priceLimit;
     }
 
     public double getPriceLimit() {
@@ -59,5 +90,13 @@ public class Order {
 
     public long getTime() {
         return time;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
     }
 }

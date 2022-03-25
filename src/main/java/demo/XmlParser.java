@@ -209,8 +209,8 @@ public class XmlParser {
         String amountStr = checkHasAttributeAndGetIt(element, "amount");
         String limitStr = checkHasAttributeAndGetIt(element, "limit");
         try {
-            double amount = Float.parseFloat(amountStr);
-            double limit = Float.parseFloat(limitStr);
+            double amount = Double.parseDouble(amountStr);
+            double limit = Double.parseDouble(limitStr);
             return new OrderTransaction(accountId, sym, amount, limit);
         }
         catch (Exception e) {
