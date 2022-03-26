@@ -40,9 +40,9 @@ class PutSymbol extends Command{
     public final String  symbol;
 
     /* number of share to be put in this account */
-    public final int     share;
+    public final double  share;
 
-    public PutSymbol(Account account, String symbol, int share){
+    public PutSymbol(Account account, String symbol, double share){
         this.account = account;
         this.symbol  = symbol;
         this.share   = share;

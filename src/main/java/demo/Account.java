@@ -1,6 +1,8 @@
 package demo;
 
-import javax.persistence.Basic;
+import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /* account model */
 @javax.persistence.Entity
@@ -34,4 +36,5 @@ public class Account {
     public void setBalance(int balance) {
         this.balance = balance;
     }
+
 }

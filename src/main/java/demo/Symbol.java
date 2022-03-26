@@ -1,18 +1,22 @@
 package demo;
 
-import javax.persistence.Basic;
-import javax.persistence.Column;
+import javax.persistence.*;
+import java.util.Set;
 
 @javax.persistence.Entity
 public class Symbol {
-    /* the name of the symbol */
+
     @javax.persistence.Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    public int id;
+
+    /* the name of the symbol */
+    @Basic
     public String name;
 
     /* corresponding account id */
-    @javax.persistence.Basic
-    @Column(nullable = false)
-    public String accountId;
+    @JoinColumn(name= "account_id", referencedColumnName = "account_id", nullable = false)
+    public String account_id;
 
     /* how many shares in this account */
     @javax.persistence.Basic
@@ -20,9 +24,10 @@ public class Symbol {
 
     public Symbol(){}
 
-    public Symbol(String name, String accountId, double share) {
+
+    public Symbol(String name, String account_id, double share) {
         this.name = name;
-        this.accountId = accountId;
+        this.account_id = account_id;
         this.share = share;
     }
 
@@ -34,12 +39,12 @@ public class Symbol {
         this.name = name;
     }
 
-    public String getAccountId() {
-        return accountId;
+    public String getAccount_id() {
+        return account_id;
     }
 
-    public void setAccountId(String accountId) {
-        this.accountId = accountId;
+    public void setAccount_id(String account_id) {
+        this.account_id = account_id;
     }
 
     public double getShare() {

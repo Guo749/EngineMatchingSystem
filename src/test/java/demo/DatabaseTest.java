@@ -11,9 +11,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class DatabaseTest {
     @Test
-    public void testInsertAccount(){
-        Account account = new Account(200, "03415752");
-        Database.createAccount(account);
+    public void testInit() throws SQLException, ClassNotFoundException {
+        Database.init();
     }
 
     @Test

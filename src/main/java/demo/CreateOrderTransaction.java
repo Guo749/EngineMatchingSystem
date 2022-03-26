@@ -1,5 +1,6 @@
 package demo;
 
+import javafx.util.Pair;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
@@ -7,8 +8,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.beans.PropertyEditorSupport;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * The class is to do the create, two parts
@@ -37,37 +37,53 @@ public class CreateOrderTransaction implements Transaction{
             this.session = sessionFactory.openSession();
             this.tx      = this.session.beginTransaction();
 
-            //step1. we check about the account number
-            checkIfCanCreateAccount(actions);
-            //step2. we check about the sym
-            //todo: finsih this part
-            //checkIfCanPutSym(actions);
-            //step3. if all ok, we do it
-            for(Command command : this.actions){
-                if(command instanceof CreateAccount){
-                    CreateAccount ca = (CreateAccount) command;
-                    this.session.save(ca.account);
-                }else{
-                    PutSymbol ps = (PutSymbol) command;
+            /* step1. we check about the account number */
+            List<Account> toAddAccount = new ArrayList<>();
+            Set<String> existAccounts = checkIfCanCreateAccount(actions, toAddAccount);
 
-                    CriteriaBuilder   builder       = sessionFactory.getCriteriaBuilder();
-                    CriteriaQuery<Account> criteria = builder.createQuery(Account.class);
-                    Root<Account> root = criteria.from(Account.class);
-                    criteria.select(root).where(builder.equal(root.get("account_id"), ps.account.getAccountNum()),
-                                                builder.equal(root.get("sym"), ps.symbol));
-                    List<Account> result = this.session.createQuery(criteria).getResultList();
-                    //todo: finish this part
-                    if(result.size() == 0){
+            /* step2. we check about the sym */
+            Map<String, Map<String, Double>> putWorkLoad = checkIfCanPutSym(actions, existAccounts);
 
+            /* step3. if all ok, we do it */
+            for(Account account : toAddAccount){
+                //create the account
+                this.session.save(account);
+            }
+
+            for(String account_id : putWorkLoad.keySet()){
+                for(String symbolName : putWorkLoad.get(account_id).keySet()) {
+                    //update share in given symbol
+                    CriteriaBuilder builder = this.session.getCriteriaBuilder();
+                    CriteriaQuery<Symbol> criteria = builder.createQuery(Symbol.class);
+                    Root<Symbol> root = criteria.from(Symbol.class);
+                    criteria.select(root).where(
+                        builder.equal(root.get("account_id"), account_id),
+                        builder.equal(root.get("name"), symbolName));
+
+                    List<Symbol> results = this.session.createQuery(criteria).getResultList();
+                    double share = 0.0;
+                    if(results.size() == 1){
+                        Symbol oldSymbol = results.get(0);
+                        share = oldSymbol.share + putWorkLoad.get(account_id).get(symbolName);
+                        oldSymbol.setShare(share);
+
+                        this.session.update(oldSymbol);
                     }else{
-
+                        share += putWorkLoad.get(account_id).get(symbolName);
+                        Symbol newSymbol = new Symbol(symbolName, account_id, share);
+                        this.session.save(newSymbol);
                     }
                 }
             }
 
             tx.commit();
         }
-        finally {
+        catch (Exception e) {
+
+            e.printStackTrace();
+            this.tx.rollback();
+
+        }finally {
             if(session != null) {
                 session.close();
             }
@@ -77,68 +93,84 @@ public class CreateOrderTransaction implements Transaction{
 
     /**
      * Check if the action to create account has not been done before
-     * @param actions
+     * @param actions commands from XML <create></create>
+     * @return all accounts that exist in the database
      */
-    private void checkIfCanCreateAccount(List<Command> actions) throws IllegalArgumentException{
+    private Set<String> checkIfCanCreateAccount(List<Command> actions, List<Account> accountToAdd) throws IllegalArgumentException{
         int len = actions.size();
 
+        Set<String> toAddAccount = new HashSet<>();
         for(int i = 0; i < len; i++){
             Command command = actions.get(i);
             if(command instanceof CreateAccount){
                 CreateAccount ca = (CreateAccount) command;
                 String account_id               = ca.account.getAccountNum();
-                CriteriaBuilder builder         = this.session.getCriteriaBuilder();
-                CriteriaQuery<Account> criteria = builder.createQuery(Account.class);
-                Root<Account>          root     = criteria.from(Account.class);
-                criteria.select(root).where(builder.equal(root.get("account_id"), account_id));
-                List<Account> results = this.session.createQuery(criteria).getResultList();
-                if(results.size() != 0){
-                    throw new IllegalArgumentException("account has already exist + " + account_id);
+
+                if(toAddAccount.contains(account_id)){
+                    throw new IllegalArgumentException("Duplicate account created " + account_id);
                 }
+                toAddAccount.add(account_id);
+                accountToAdd.add(ca.account);
             }
         }
+
+        /* get all account number and see if duplicates */
+        CriteriaBuilder builder         = this.session.getCriteriaBuilder();
+        CriteriaQuery<Account> criteria = builder.createQuery(Account.class);
+        Root<Account>          root     = criteria.from(Account.class);
+        criteria.select(root);
+        List<Account> results = this.session.createQuery(criteria).getResultList();
+
+
+        for(Account ac : results){
+            if(toAddAccount.contains(ac.getAccountNum())){
+                throw new IllegalArgumentException("account has already exist " + ac.getAccountNum());
+            }
+        }
+
+
+        return toAddAccount;
     }
 
     /**
      * check if it is legal to put the symbol here
+     * The logic to check if the symbol can be put in the account is
+     *  1. if the account has exist in the existAccount, that it will be fine
+     *  2. if the account has occurred in the accountToAdd, it will be fine
+     *
+     *  other than that, it will be illegal
      * @param actions
      */
-    private void checkIfCanPutSym(List<Command> actions) {
+    private Map<String, Map<String, Double>> checkIfCanPutSym(List<Command> actions, Set<String> existAccount) {
         int len = actions.size();
-        List<String> list = new ArrayList<>();
+        Map<String, Map<String, Double>> res = new HashMap<>();
+        Set<String> accountToAdd = new HashSet<>();
+
         for(int i = 0; i < len; i++){
             Command command = actions.get(i);
             if(command instanceof PutSymbol){
                 PutSymbol ps = (PutSymbol) command;
-                list.add(ps.account.getAccountNum());
+                String checkAccount = ps.account.getAccountNum();
+
+                if(!existAccount.contains(checkAccount) && !accountToAdd.contains(checkAccount)){
+                    throw new IllegalArgumentException("put symbol in an account that does not exist " + checkAccount);
+                }
+
+                double originShare = 0.0;
+                res.putIfAbsent(checkAccount, new HashMap<>());
+                if(res.containsKey(checkAccount) && res.get(checkAccount).containsKey(ps.symbol)){
+                    originShare = res.get(checkAccount).get(ps.symbol);
+                }
+
+                originShare += ps.share;
+                res.get(checkAccount).put(ps.symbol, originShare);
+            }else{
+                CreateAccount ca = (CreateAccount) command;
+                accountToAdd.add(ca.account.getAccountNum());
             }
         }
 
-        String sql = concatenateSQL(list);
-
-        List result = session.createQuery(sql).getResultList();
-
-        //todo: check it we can put the symbol in this account
-    }
-
-    /**
-     * Command method, use list to concatenate the symbol
-     *
-     * @param list the list to concatenate the account_id
-     * @return sql query
-     */
-    private String concatenateSQL(List<String> list){
-        StringBuffer sql = new StringBuffer();
-        sql.append("SELECT * FROM ACCOUNT WHERE ");
-        for(int j = 0; j < list.size(); j++){
-            if(j == 0)
-                sql.append(" account_id = '").append(list.get(j)).append("'");
-            else
-                sql.append(" OR account_id = '").append(list.get(j)).append("'");
-        }
-
-
-        return sql.toString();
+        return res;
     }
 
 }
