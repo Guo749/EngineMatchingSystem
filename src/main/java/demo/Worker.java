@@ -6,8 +6,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 
-public class Worker implements Runnable{
+public class Worker extends Thread{
     /* since int has only 10 digits, if reach 10, report error */
     private static final int MAX_INT_DIGIT = 10;
 
@@ -21,8 +22,8 @@ public class Worker implements Runnable{
     public DataInputStream in          =  null;
 
     public Worker(Socket client, ServerSocket ss){
-        this.serverSocket = ss;
         this.client = client;
+        this.serverSocket = ss;
     }
 
     @Override
@@ -32,11 +33,12 @@ public class Worker implements Runnable{
             this.in = new DataInputStream(
                 new BufferedInputStream(client.getInputStream()));
 
+            System.out.println("begin read line ");
             int xmlLen = readLine();
-
+            System.out.println(xmlLen + " ----");
             /* step3: process it accordingly */
             String xml = readNum(xmlLen);
-
+            System.out.println(xml + " -----");
             XmlParser xmlParser = new XmlParser();
             String reply = xmlParser.processXML(xml);
             StringBuilder sb = new StringBuilder();
@@ -81,6 +83,7 @@ public class Worker implements Runnable{
             }
 
             c = this.in.read();
+
             if(c == '\n'){
                 break;
             }else if(Character.isDigit(c)){
@@ -102,7 +105,6 @@ public class Worker implements Runnable{
 
     /**
      * Used to read num bytes from client
-     * todo: too many system calls, may improve based on buffer zone
      *
      * @param num # of bytes to read
      * @return the content
@@ -110,11 +112,9 @@ public class Worker implements Runnable{
     private String readNum(int num) throws IOException {
         int c;
         StringBuilder res = new StringBuilder();
-
-        while(num != 0) {
-            c = this.in.read();
-            res.append(((char)c));
-            num--;
+        byte[] bytes = this.in.readNBytes(num);
+        for(byte b : bytes){
+            res.append((char) (b));
         }
 
         return res.toString();

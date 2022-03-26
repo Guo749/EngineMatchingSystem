@@ -230,10 +230,11 @@ public class XmlParserTest {
         return xmlParser.parseTransactions(doc);
     }
 
+
     /**
      * Generate 6 digits random number, used by account
      */
-    private String geneRandAccountNum(){
+    public String geneRandAccountNum(){
         StringBuilder sb = new StringBuilder();
         for(int i = 0; i < 6; i++){
             Random r  = new Random();
@@ -252,7 +253,7 @@ public class XmlParserTest {
      * Given several arguments, we generate the corresponding create
      * account clause
      */
-    private String geneCreateAccountClause(String account, String Balance){
+    public String geneCreateAccountClause(String account, String Balance){
         String res = "<account id=\"" + account + "\" balance=\"" + Balance + "\"/>\n";
 
         return res;
@@ -261,7 +262,7 @@ public class XmlParserTest {
     /**
      * Given several arguments, we generate put symbol clause
      */
-    private String geneCreateSymClause(String symbol, List<Pair<String, String>> list){
+    public String  geneCreateSymClause(String symbol, List<Pair<String, String>> list){
         StringBuilder sb = new StringBuilder();
         sb.append("<symbol sym=\"").append(symbol).append("\">\n");
 
@@ -274,7 +275,7 @@ public class XmlParserTest {
         return sb.toString();
     }
 
-    private List<Pair<String, String>> generateSymList(int num){
+    public List<Pair<String, String>> generateSymList(int num){
         List<Pair<String, String>> list = new ArrayList<>();
 
         for(int i = 0; i < num; i++){
@@ -283,6 +284,5 @@ public class XmlParserTest {
 
         return list;
     }
-
 
 }

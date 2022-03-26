@@ -31,24 +31,16 @@ public class Server{
      */
     public void run(){
         while(true) {
+            System.out.println("server is running");
             Socket client = null;
             try {
-
                 client = this.serverSocket.accept();
                 System.out.println("Client accepted");
 
-                Thread worker = new Thread(new Worker(client, serverSocket));
+                Worker worker = new Worker(client, this.serverSocket);
                 worker.start();
             } catch (Exception e){//whatever bad happens, we close and regard it as bad reqeust
                 e.printStackTrace();
-            } finally {
-                if(client != null){
-                    try {
-                        client.close();
-                    } catch (IOException e) {
-                        System.out.println("cannot close the client");
-                    }
-                }
             }
         }
     }
