@@ -38,7 +38,13 @@ public class XmlParser {
 
         //xml is about <create> .... </create>
         if(CREATE_TAG.equals(rootEle)){
-            doCreate(doc);
+            List<Command> actions = parseCreate(doc);
+            if(actions.size() == 0){
+                throw new IllegalArgumentException("wrong template with no request");
+            }
+
+            CreateOrderTransaction cot = new CreateOrderTransaction(actions);
+            cot.execute();
         }else if(TRANS_TAG.equals(rootEle)){// about <transactions> </tran>
             // TODO: Should this be parseAndExecuteTransactions and return the execution results?
             List<Transaction> transactionList = parseTransactions(doc);
@@ -54,7 +60,7 @@ public class XmlParser {
      * TODO: Not sure whether the processing order matters: If there is a symbol creation for account 123456 (originally
      *            not exist), and account 123456 is created after this symbol creation, the below code will allow it.
      */
-    private void doCreate(Document doc) throws IllegalArgumentException{
+    private List<Command> parseCreate(Document doc) throws IllegalArgumentException{
         List<Command> actions = new ArrayList<>();
 
         /* step1: parse xml into action list */
@@ -89,8 +95,7 @@ public class XmlParser {
         }
 
         /* step2: do the transaction */
-        CreateOrderTransaction cot = new CreateOrderTransaction(actions);
-        cot.execute();
+        return actions;
     }
 
 //    /**

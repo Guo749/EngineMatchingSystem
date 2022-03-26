@@ -10,11 +10,11 @@ public class Account {
     private String account_id;
 
     @Basic
-    private int balance;
+    private double balance;
 
     public Account(){}
 
-    public Account(int balance, String accountNum){
+    public Account(double balance, String accountNum){
         this.balance    = balance;
         this.account_id = accountNum;
     }
@@ -27,7 +27,7 @@ public class Account {
         this.account_id = accountNum;
     }
 
-    public int getBalance() {
+    public double getBalance() {
         return balance;
     }
 

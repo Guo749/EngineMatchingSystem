@@ -1,5 +1,6 @@
 package demo;
 
+import jdk.jfr.Description;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -9,21 +10,36 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class XmlParserTest {
     @Test
-    public void testTopLevel() throws ParserConfigurationException, IOException, SAXException {
+    public void testTopLevel() throws ParserConfigurationException, IOException, SAXException, SQLException, ClassNotFoundException {
+        Database.init();
         String xml = "<?xml version = \"1.0\"?> <create> </create>";
+
+        XmlParser xmlParser = new XmlParser();
+        assertThrows(IllegalArgumentException.class, () -> xmlParser.processXML(xml));
+    }
+
+    @Test
+    @Description("test simple create one account")
+    public void testCreateOne() throws ParserConfigurationException, IOException, SAXException, SQLException, ClassNotFoundException {
+        Database.init();
+        String xml = "<?xml version = \"1.0\"?> <create><account id=\"123456\" balance=\"1000\"/> </create>";
 
         XmlParser xmlParser = new XmlParser();
         xmlParser.processXML(xml);
     }
 
     @Test
-    public void TestDoCreateAccount() throws ParserConfigurationException, IOException, SAXException {
+    public void TestDoCreateAccount() throws ParserConfigurationException, IOException, SAXException, SQLException, ClassNotFoundException {
+        /* make sure db is inited */
+        Database.init();
         String xml = """
             <?xml version="1.0" encoding="UTF-8"?>
             <create>

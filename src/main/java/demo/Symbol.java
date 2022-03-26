@@ -1,6 +1,7 @@
 package demo;
 
 import javax.persistence.Basic;
+import javax.persistence.Column;
 
 @javax.persistence.Entity
 public class Symbol {
@@ -10,6 +11,7 @@ public class Symbol {
 
     /* corresponding account id */
     @javax.persistence.Basic
+    @Column(nullable = false)
     public String accountId;
 
     /* how many shares in this account */

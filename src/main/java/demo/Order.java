@@ -24,6 +24,7 @@ public class Order {
     private Set<Order> childOrders = new HashSet<Order>();
 
     @Basic
+    @Column(nullable = false)
     private String sym;
 
     @Basic
@@ -33,6 +34,7 @@ public class Order {
     private double priceLimit;
 
     @Basic
+    @Column(nullable = false)
     private OrderStatus status;
 
     // Seconds since the epoch
