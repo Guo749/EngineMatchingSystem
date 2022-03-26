@@ -18,8 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class XmlParserTest {
     private final String xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
@@ -70,10 +69,12 @@ public class XmlParserTest {
         String xml = "<?xml version = \"1.0\"?> <create><account id=\"" + accountNum + "\" balance=\"1000\"/> </create>";
 
         XmlParser xmlParser = new XmlParser();
-        xmlParser.processXML(xml);
+        String res1 = xmlParser.processXML(xml);
 
-        /* do that again, assure to throw */
-        assertThrows(IllegalArgumentException.class, () -> xmlParser.processXML(xml));
+        String res2 = xmlParser.processXML(xml);
+
+        assert(!res1.contains("ACCOUNT HAS EXISTED"));
+        assert(res2.contains("ACCOUNT HAS EXISTED"));
     }
 
     @Test
@@ -152,6 +153,26 @@ public class XmlParserTest {
 
         XmlParser xmlParser = new XmlParser();
         assertThrows(IllegalArgumentException.class, () -> xmlParser.processXML(xml));
+    }
+
+    @Test
+    @Description("test output for actions reply")
+    public void testStringReply(){
+        List<Command> actions = new ArrayList<>();
+        for(int i = 0; i < 10; i++){
+            if(i % 2 == 0){
+                CreateAccount ca = new CreateAccount(new Account(32.2, geneRandAccountNum()));
+                ca.successfulExecute = (i % 4 == 0);
+                actions.add(ca);
+            }else{
+                PutSymbol ps = new PutSymbol(new Account(32.2, geneRandAccountNum()), "BTC", 100.0);
+                ps.successfulExecute = (i % 3 == 0);
+                actions.add(ps);
+            }
+        }
+
+        XmlParser xp = new XmlParser();
+        System.out.println(xp.formCreateReply(actions));
     }
 
 

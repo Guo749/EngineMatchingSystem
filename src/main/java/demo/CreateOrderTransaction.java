@@ -19,13 +19,17 @@ public class CreateOrderTransaction implements Transaction{
     /* the action we should execute */
     private final List<Command> actions;
 
+    /* sql session */
     private Session session;
+
+    /* transaction handler */
     private org.hibernate.Transaction tx;
 
     public CreateOrderTransaction(List<Command> actions){
-        this.actions = actions;
-        this.session = null;
-        this.tx      = null;
+        this.actions   = actions;
+        this.session   = null;
+        this.tx        = null;
+
     }
 
 
@@ -37,58 +41,71 @@ public class CreateOrderTransaction implements Transaction{
             this.session = sessionFactory.openSession();
             this.tx      = this.session.beginTransaction();
 
-            /* step1. we check about the account number */
-            List<Account> toAddAccount = new ArrayList<>();
-            Set<String> existAccounts = checkIfCanCreateAccount(actions, toAddAccount);
+            for(Command command : actions){
+                if(command instanceof CreateAccount){
+                    CreateAccount ca = (CreateAccount) command;
 
-            /* step2. we check about the sym */
-            Map<String, Map<String, Double>> putWorkLoad = checkIfCanPutSym(actions, existAccounts);
-
-            /* step3. if all ok, we do it */
-            for(Account account : toAddAccount){
-                //create the account
-                this.session.save(account);
-            }
-
-            for(String account_id : putWorkLoad.keySet()){
-                for(String symbolName : putWorkLoad.get(account_id).keySet()) {
-                    //update share in given symbol
-                    CriteriaBuilder builder = this.session.getCriteriaBuilder();
-                    CriteriaQuery<Symbol> criteria = builder.createQuery(Symbol.class);
-                    Root<Symbol> root = criteria.from(Symbol.class);
-                    criteria.select(root).where(
-                        builder.equal(root.get("account_id"), account_id),
-                        builder.equal(root.get("name"), symbolName));
-
-                    List<Symbol> results = this.session.createQuery(criteria).getResultList();
-                    double share = 0.0;
-                    if(results.size() == 1){
-                        Symbol oldSymbol = results.get(0);
-                        share = oldSymbol.share + putWorkLoad.get(account_id).get(symbolName);
-                        oldSymbol.setShare(share);
-
-                        this.session.update(oldSymbol);
+                    //check if we have created it before
+                    if(accountIsExist(ca.account.getAccountNum())) {
+                        command.successfulExecute = false;
                     }else{
-                        share += putWorkLoad.get(account_id).get(symbolName);
-                        Symbol newSymbol = new Symbol(symbolName, account_id, share);
-                        this.session.save(newSymbol);
+                        this.session.save(ca.account);
+                        command.successfulExecute = true;
+                    }
+                }else{
+                    PutSymbol ps = (PutSymbol) command;
+
+                    if(accountIsExist(ps.account.getAccountNum())){
+                        CriteriaBuilder builder = this.session.getCriteriaBuilder();
+                        CriteriaQuery<Symbol> criteria = builder.createQuery(Symbol.class);
+                        Root<Symbol> root = criteria.from(Symbol.class);
+                        criteria.select(root).where(
+                            builder.equal(root.get("account_id"), ps.account.getAccountNum()),
+                            builder.equal(root.get("name"), ps.symbol));
+
+                        List<Symbol> res = this.session.createQuery(criteria).getResultList();
+                        if(res.size() != 0){
+                            assert(res.size() == 1);
+                            Symbol oldSymbol = res.get(0);
+                            Symbol newSymbol = new Symbol(oldSymbol.name, oldSymbol.account_id, oldSymbol.share + ps.share);
+                            this.session.save(newSymbol);
+                        }else{
+                            Symbol newSymbol = new Symbol(ps.symbol, ps.account.getAccountNum(), ps.share);
+                            this.session.save(newSymbol);
+                        }
+
+                        command.successfulExecute = true;
+                    }else{
+                        command.successfulExecute = false;
                     }
                 }
             }
 
             tx.commit();
-        }
-        catch (Exception e) {
-
+        } catch (Exception e) {
             e.printStackTrace();
             this.tx.rollback();
-
         }finally {
             if(session != null) {
                 session.close();
             }
         }
 
+    }
+
+    /**
+     *  do one query if the account has exist
+     *
+     */
+    private boolean accountIsExist(String accountNum){
+        CriteriaBuilder builder = this.session.getCriteriaBuilder();
+        CriteriaQuery<Account> criteria = builder.createQuery(Account.class);
+        Root<Account> root = criteria.from(Account.class);
+        criteria.select(root).where(
+            builder.equal(root.get("account_id"), accountNum));
+
+        List<Account> results = this.session.createQuery(criteria).getResultList();
+        return results.size() != 0;
     }
 
     /**

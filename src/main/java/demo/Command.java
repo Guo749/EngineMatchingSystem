@@ -7,6 +7,9 @@ package demo;
 public abstract class Command {
     /* how to execute this command in sql */
     public abstract String sqlCommand();
+
+    /* indicate whether the command has executed successfully, default false */
+    public boolean successfulExecute = false;
 }
 
 /**
