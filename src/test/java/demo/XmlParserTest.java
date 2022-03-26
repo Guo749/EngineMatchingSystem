@@ -23,6 +23,25 @@ public class XmlParserTest {
     }
 
     @Test
+    public void TestDoCreateAccount() throws ParserConfigurationException, IOException, SAXException {
+        String xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <create>
+             <account id="123456" balance="1000"/>
+              <symbol sym="SPY">
+              <account id="123458">100000</account>
+              <account id="123459">100000</account>
+              </symbol>
+             <account id="123457" balance="1000"/>
+            </create>
+            """;
+
+        XmlParser xmlParser = new XmlParser();
+        xmlParser.processXML(xml);
+    }
+
+
+    @Test
     public void testParseOrderTransactions() throws ParserConfigurationException, IOException, SAXException {
         String xml = "<?xml version = \"1.0\"?> <transactions id=\"1234\"> <order sym=\"SPY\" amount=\"100\" limit=\"145.67\"/> </transactions>";
         List<Transaction> transactionList = getTransactionList(xml);
@@ -54,6 +73,24 @@ public class XmlParserTest {
         CancelTransaction cancelTransaction = (CancelTransaction) transactionList.get(2);
         assertEquals(1234, cancelTransaction.getAccountId());
         assertEquals(6996, cancelTransaction.getTransactionId());
+    }
+
+
+    @Test
+    private void TestDoCreateAndSym() throws ParserConfigurationException, IOException, SAXException {
+        String xml =
+            """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <create>
+                 <account id="123456" balance="1000"/>
+                 <symbol sym="SPY">
+                 <account id="123456">100000</account>
+                 </symbol>
+                </create>            
+            """;
+
+        XmlParser xmlParser = new XmlParser();
+        xmlParser.processXML(xml);
     }
 
     private List<Transaction> getTransactionList(String xml) throws ParserConfigurationException, IOException, SAXException {

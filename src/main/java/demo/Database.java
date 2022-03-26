@@ -1,5 +1,9 @@
 package demo;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,31 +19,25 @@ import javax.transaction.Transactional;
 
 public class Database {
     /* note this is globally unique, we should only instantiate one */
-    private static final SessionFactory sessionFactory = buildSessionFactory();
+    private static SessionFactory sessionFactory;
 
-    /**
-     * Build session factory
-     * @return unique session factory
-     */
-    private static SessionFactory buildSessionFactory(){
-        try{
-            if(sessionFactory == null){
-                Configuration cfg = new Configuration().configure();
+    private static boolean hasInitialize = false;
 
-                //todo: add account, order info
-                cfg.addAnnotatedClass(Account.class);
-                cfg.addAnnotatedClass(Order.class);
-                org.hibernate.boot.registry.StandardServiceRegistryBuilder builder =
-                    new org.hibernate.boot.registry.StandardServiceRegistryBuilder().applySettings(cfg.getProperties());
-                return cfg.buildSessionFactory(builder.build());
-            }else{
-                return null;
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-            return null;
+    public static void init() throws ClassNotFoundException, SQLException {
+        if(!hasInitialize) {
+            System.out.println("begin initialized db");
+            Class.forName("org.postgresql.Driver");
+            Connection conn
+                = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
+
+            conn.setAutoCommit(false);
+
+            sessionFactory = buildSessionFactory();
+            System.out.println("establish db successfully");
+            hasInitialize = true;
         }
     }
+
 
     public static SessionFactory getSessionFactory(){
         return sessionFactory;
@@ -47,7 +45,6 @@ public class Database {
 
     /**
      * Test Method, used to create account
-     * @param account
      */
     public static void createAccount(Account account){
         try{
@@ -231,4 +228,32 @@ public class Database {
         }
         return null;
     }
+
+    /****************** initialize the table when DB is booted   **********************/
+
+    /**
+     * Build session factory
+     * @return unique session factory
+     */
+    private static SessionFactory buildSessionFactory(){
+        try{
+            if(sessionFactory == null){
+                Configuration cfg = new Configuration().configure();
+
+                /** adding these will create table automatically */
+                cfg.addAnnotatedClass(Account.class);
+                cfg.addAnnotatedClass(Order.class);
+                cfg.addAnnotatedClass(Symbol.class);
+                org.hibernate.boot.registry.StandardServiceRegistryBuilder builder =
+                    new org.hibernate.boot.registry.StandardServiceRegistryBuilder().applySettings(cfg.getProperties());
+                return cfg.buildSessionFactory(builder.build());
+            }else{
+                return sessionFactory;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }

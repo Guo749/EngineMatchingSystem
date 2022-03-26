@@ -12,7 +12,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
 
-    //TODO: Add a foreign key account ID
+    @ManyToOne(cascade = {CascadeType.ALL})
+    @JoinColumn(name = "account_id", referencedColumnName = "account_id")
+    private Account account_id;
 
     @ManyToOne(cascade = {CascadeType.ALL})
     @JoinColumn(name = "parent_order_id")

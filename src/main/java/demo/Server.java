@@ -9,6 +9,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 
 public class Server {
     /* server socket */
@@ -17,13 +18,10 @@ public class Server {
     /* the stream we read from the client */
     public DataInputStream in          =  null;
 
-    public Server(int port) throws IOException {
+    public Server(int port) throws IOException, ClassNotFoundException, SQLException {
         this.serverSocket = new ServerSocket(port);
         System.out.println("Server started");
-
-        //initialize the db
-        DBHelper dbHelper = new DBHelper();
-        DBHelper dbHelper1 = new DBHelper();
+        Database.init();
     }
 
     /**

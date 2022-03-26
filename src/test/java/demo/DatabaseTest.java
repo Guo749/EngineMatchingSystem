@@ -1,7 +1,9 @@
 package demo;
 
+import jdk.jfr.Description;
 import org.junit.jupiter.api.Test;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DatabaseTest {
     @Test
     public void testInsertAccount(){
-        Account account = new Account(2,200);
+        Account account = new Account(200, "03415752");
         Database.createAccount(account);
     }
 
@@ -53,5 +55,12 @@ public class DatabaseTest {
             System.out.println(order.getId() + " " + order.getSym() + " " + order.getAmount() + " " +
                     order.getPriceLimit() + " " + order.getTime());
         }
+    }
+
+    @Test
+    @Description("test if DB can be initialized properly")
+    public void testInitDB() throws SQLException, ClassNotFoundException {
+        Database.init();
+        Database.init();
     }
 }

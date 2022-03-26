@@ -1,23 +1,37 @@
 package demo;
 
+import javax.persistence.Basic;
+
 /* account model */
 @javax.persistence.Entity
 public class Account {
 
     @javax.persistence.Id
-    private int id;
+    private String account_id;
 
-    @javax.persistence.Basic
+    @Basic
     private int balance;
 
     public Account(){}
 
-    public Account(int id, int balance){
-        this.id      = id;
-        this.balance = balance;
+    public Account(int balance, String accountNum){
+        this.balance    = balance;
+        this.account_id = accountNum;
     }
 
-    public int getId() {
-        return id;
+    public String getAccountNum() {
+        return account_id;
+    }
+
+    public void setAccountNum(String accountNum) {
+        this.account_id = accountNum;
+    }
+
+    public int getBalance() {
+        return balance;
+    }
+
+    public void setBalance(int balance) {
+        this.balance = balance;
     }
 }
