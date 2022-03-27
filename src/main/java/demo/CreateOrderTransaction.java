@@ -85,6 +85,14 @@ public class CreateOrderTransaction implements Transaction{
         } catch (Exception e) {
             e.printStackTrace();
             this.tx.rollback();
+
+            /* make sure all actions are not properly executed */
+            if(this.actions != null) {
+                int len = this.actions.size();
+                for (int i = 0; i < len; i++){
+                    this.actions.get(i).successfulExecute = false;
+                }
+            }
         }finally {
             if(session != null) {
                 session.close();
