@@ -2,6 +2,7 @@ package demo;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 
@@ -17,7 +18,7 @@ public class Client {
 
     private BufferedReader br;
 
-    private DataOutputStream dos;
+    private OutputStream os;
 
     private final static int MAX_INT_DIGIT = 11;
 
@@ -27,7 +28,7 @@ public class Client {
         System.out.println("connection establish");
 
         this.br = new BufferedReader(new StringReader(file));
-        this.dos = new DataOutputStream(this.socket.getOutputStream());
+        this.os = this.socket.getOutputStream();
     }
 
     public void sendXMLAndGetReply() throws IOException {
@@ -48,23 +49,24 @@ public class Client {
         int len = content.length();
         String request = len + "\n" + content;
 
-        System.out.println(request);
         //step2: write it to the client
-        this.dos.writeUTF(request);
+        this.os.write(request.getBytes(StandardCharsets.UTF_8));
 
         //step3: read it
         String data = readFromServer();
-        System.out.println("what we receive + -------");
+
+        System.out.println("----- client: what we receive -----");
         System.out.println(data);
     }
 
     private String readFromServer() throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-        char[] buffer = new char[8192];
         StringBuilder res = new StringBuilder();
-        while(br.ready()){
-            int len = br.read(buffer, 0, 8192);
-            res.append(buffer, 0, len);
+        InputStream is = this.socket.getInputStream();
+        byte[] bytes   = new byte[1024];
+        int len;
+
+        while((len = is.read(bytes)) != -1){
+            res.append(new String(bytes, 0, len, StandardCharsets.UTF_8));
         }
 
         return res.toString();

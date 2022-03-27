@@ -13,3 +13,4 @@ usage: sudo docker compose up
 2. [PostgreSQL](https://www.tutorialspoint.com/postgresql/postgresql_java.htm)
 3. [Transaction For Hibernate](https://www.javatpoint.com/hibernate-transaction-management-example)
 4. [Java Socket Programming](https://www.geeksforgeeks.org/establishing-the-two-way-communication-between-server-and-client-in-java/)
+5. [Java Socket Programming-2](https://www.cnblogs.com/yiwangzhibujian/p/7107785.html)

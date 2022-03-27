@@ -46,7 +46,6 @@ public class XmlParser {
 
             CreateOrderTransaction cot = new CreateOrderTransaction(actions);
             cot.execute();
-
             return formCreateReply(actions);
         }else if(TRANS_TAG.equals(rootEle)){// about <transactions> </tran>
             // TODO: Should this be parseAndExecuteTransactions and return the execution results?

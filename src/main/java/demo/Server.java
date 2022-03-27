@@ -31,7 +31,7 @@ public class Server{
      */
     public void run(){
         while(true) {
-            System.out.println("server is running");
+
             Socket client = null;
             try {
                 client = this.serverSocket.accept();

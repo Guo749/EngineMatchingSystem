@@ -1,11 +1,11 @@
 package demo;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import org.hibernate.result.Output;
+
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Worker extends Thread{
@@ -35,10 +35,10 @@ public class Worker extends Thread{
 
             System.out.println("begin read line ");
             int xmlLen = readLine();
-            System.out.println(xmlLen + " ----");
+
             /* step3: process it accordingly */
             String xml = readNum(xmlLen);
-            System.out.println(xml + " -----");
+
             XmlParser xmlParser = new XmlParser();
             String reply = xmlParser.processXML(xml);
             StringBuilder sb = new StringBuilder();
@@ -46,7 +46,6 @@ public class Worker extends Thread{
 
             /* step4: write it back the result */
             writeToClient(client, sb.toString());
-            System.out.println("write back to the client ");
         }catch (Exception e){
             e.printStackTrace();
         }finally {
@@ -128,8 +127,8 @@ public class Worker extends Thread{
      */
     public void writeToClient(Socket client, String content){
         try {
-            DataOutputStream dos = new DataOutputStream(client.getOutputStream());
-            dos.writeUTF(content);
+            OutputStream dos = client.getOutputStream();
+            dos.write(content.getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             System.out.println("write error");
         }
