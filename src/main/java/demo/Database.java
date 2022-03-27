@@ -27,8 +27,8 @@ public class Database {
         if(!hasInitialize) {
             System.out.println("begin initialized db");
             Class.forName("org.postgresql.Driver");
-            Connection conn
-                = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
+            Connection conn                                     //change it to localhost if you want connect with local db
+                = DriverManager.getConnection("jdbc:postgresql://db:5432/postgres", "postgres", "postgres");
 
             conn.setAutoCommit(false);
 

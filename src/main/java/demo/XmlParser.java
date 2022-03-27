@@ -208,7 +208,7 @@ public class XmlParser {
                 if(ca.successfulExecute){
                     res.append("<created id=\"").append(ca.account.getAccountNum()).append("\"/>\n");
                 }else{
-                    res.append("<error id=\"").append(ca.account.getAccountNum()).append("\">").append("ACCOUNT HAS EXISTED").append("</error>\n");
+                    res.append("<error id=\"").append(ca.account.getAccountNum()).append("\">").append("Account already exists").append("</error>\n");
                 }
             }else{
                 PutSymbol ps = (PutSymbol) command;
