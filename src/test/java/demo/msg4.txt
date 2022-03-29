@@ -1,0 +1,43 @@
+1266
+<create>
+<account id="218631" balance="-4632"/>
+<account id="067581" balance="1191"/>
+<account id="928321" balance="-708"/>
+<account id="821116" balance="-1966"/>
+<account id="632683" balance="1210"/>
+<symbol sym="BTC">
+<account id="218631">-4632</account>
+<account id="067581">1191</account>
+<account id="928321">-708</account>
+<account id="821116">-1966</account>
+<account id="632683">1210</account>
+</symbol>
+<symbol sym="ETC">
+<account id="218631">-4632</account>
+<account id="067581">1191</account>
+<account id="928321">-708</account>
+<account id="821116">-1966</account>
+<account id="632683">1210</account>
+</symbol>
+<symbol sym="BTC">
+<account id="218631">-4632</account>
+<account id="067581">1191</account>
+<account id="928321">-708</account>
+<account id="821116">-1966</account>
+<account id="632683">1210</account>
+</symbol>
+<symbol sym="ETC">
+<account id="218631">-4632</account>
+<account id="067581">1191</account>
+<account id="928321">-708</account>
+<account id="821116">-1966</account>
+<account id="632683">1210</account>
+</symbol>
+<symbol sym="BTC">
+<account id="218631">-4632</account>
+<account id="067581">1191</account>
+<account id="928321">-708</account>
+<account id="821116">-1966</account>
+<account id="632683">1210</account>
+</symbol>
+</create>

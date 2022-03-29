@@ -279,7 +279,7 @@ public class XmlParserTest {
         List<Pair<String, String>> list = new ArrayList<>();
 
         for(int i = 0; i < num; i++){
-            list.add(new Pair<>(geneRandAccountNum(), "500"));
+            list.add(new Pair<>(geneRandAccountNum(), String.valueOf((new Random().nextInt()) % 5000)));
         }
 
         return list;

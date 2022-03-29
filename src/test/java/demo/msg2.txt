@@ -1,0 +1,43 @@
+1254
+<create>
+<account id="296299" balance="-2576"/>
+<account id="397912" balance="235"/>
+<account id="498367" balance="2637"/>
+<account id="435314" balance="-225"/>
+<account id="452515" balance="-724"/>
+<symbol sym="BTC">
+<account id="296299">-2576</account>
+<account id="397912">235</account>
+<account id="498367">2637</account>
+<account id="435314">-225</account>
+<account id="452515">-724</account>
+</symbol>
+<symbol sym="ETC">
+<account id="296299">-2576</account>
+<account id="397912">235</account>
+<account id="498367">2637</account>
+<account id="435314">-225</account>
+<account id="452515">-724</account>
+</symbol>
+<symbol sym="BTC">
+<account id="296299">-2576</account>
+<account id="397912">235</account>
+<account id="498367">2637</account>
+<account id="435314">-225</account>
+<account id="452515">-724</account>
+</symbol>
+<symbol sym="ETC">
+<account id="296299">-2576</account>
+<account id="397912">235</account>
+<account id="498367">2637</account>
+<account id="435314">-225</account>
+<account id="452515">-724</account>
+</symbol>
+<symbol sym="BTC">
+<account id="296299">-2576</account>
+<account id="397912">235</account>
+<account id="498367">2637</account>
+<account id="435314">-225</account>
+<account id="452515">-724</account>
+</symbol>
+</create>
