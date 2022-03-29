@@ -5,9 +5,15 @@
 # and do c times request
 # todo: right now we still need to hand-click some, maybe automate
 
-for (( c=0; c<20;c++ ))
+for (( a=0; a<10;a++ ))
 do
-  nc localhost 12345 < "./txt/msg$c.txt" > "./txt/out$c.txt" &
+  for (( c=0; c<20;c++ ))
+  do
+    # nc localhost 12345 < "./txt/msg$c.txt" > "./txt/out$c.txt" &
+    nc localhost 12345 < "./txt/msg$c.txt" > /dev/null &
+    echo "loop $a-$c"
+  done
 done
 
 wait
+echo "done"
