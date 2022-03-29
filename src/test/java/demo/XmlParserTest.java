@@ -139,17 +139,18 @@ public class XmlParserTest {
     public void TestDoCreateAccount() throws ParserConfigurationException, IOException, SAXException, SQLException, ClassNotFoundException {
         /* make sure db is inited */
         Database.init();
-        String xml = """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <create>
-             <account id="123456" balance="1000"/>
-              <symbol sym="SPY">
-              <account id="123458">100000</account>
-              <account id="123459">100000</account>
-              </symbol>
-             <account id="123457" balance="1000"/>
-            </create>
-            """;
+        String  xml = "test";
+//        String xml = """
+//            <?xml version="1.0" encoding="UTF-8"?>
+//            <create>
+//             <account id="123456" balance="1000"/>
+//              <symbol sym="SPY">
+//              <account id="123458">100000</account>
+//              <account id="123459">100000</account>
+//              </symbol>
+//             <account id="123457" balance="1000"/>
+//            </create>
+//            """;
 
         XmlParser xmlParser = new XmlParser();
         assertThrows(IllegalArgumentException.class, () -> xmlParser.processXML(xml));
@@ -236,7 +237,7 @@ public class XmlParserTest {
      */
     public String geneRandAccountNum(){
         StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < 6; i++){
+        for(int i = 0; i < 10; i++){
             Random r  = new Random();
             int digit = r.nextInt() % 10;
             if(digit < 0){

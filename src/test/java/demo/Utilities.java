@@ -15,7 +15,7 @@ import java.util.Random;
  * Used to generate some info
  */
 public class Utilities {
-    private final static int WORK_LOAD = 5;
+    private final static int WORK_LOAD = 20;
 
     @Test
     public void testMain() throws IOException {
@@ -23,18 +23,19 @@ public class Utilities {
             String msg = generateWorkLoad();
             writeToFileWithLen(msg, i);
         }
+        System.out.println("holy fucking shit");
     }
 
-    private void writeToFileWithLen(String msg, int seq) throws IOException {
+    private static void writeToFileWithLen(String msg, int seq) throws IOException {
         int len = msg.length();
 
-        FileWriter fw = new FileWriter("./src/test/java/demo/msg" + seq + ".txt");
+        FileWriter fw = new FileWriter("./src/test/java/demo/txt/msg" + seq + ".txt");
         fw.write(len + "\n");
         fw.write(msg);
         fw.close();
     }
 
-    private String generateWorkLoad(){
+    private static String generateWorkLoad(){
         StringBuilder sb = new StringBuilder();
         XmlParserTest xpt = new XmlParserTest();
         List<Pair<String, String>> accounts            = xpt.generateSymList(WORK_LOAD);
