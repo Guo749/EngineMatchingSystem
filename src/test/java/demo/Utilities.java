@@ -15,7 +15,7 @@ import java.util.Random;
  * Used to generate some info
  */
 public class Utilities {
-    private final static int WORK_LOAD = 20;
+    private final static int WORK_LOAD = 3;
 
     @Test
     public void testMain() throws IOException {
