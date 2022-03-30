@@ -5,8 +5,9 @@ import os
 from random import randint
 import time
 
-ACCOUNT_LEN=20
-WORK_LOAD=1
+ACCOUNT_LEN = 20
+WORK_LOAD   = 1
+REQUEST_NUM = 75 
 
 class Node:
     def __init__(self, account, share):
@@ -108,11 +109,11 @@ def processLines(lines, errorTest):
 
 def generateWorkLoad():
     res = ""
-    myList = geneSymList(WORK_LOAD)
+    myList = geneSymList(REQUEST_NUM)
 
     ccList = []
     csList = []
-    for i in range(0, WORK_LOAD):
+    for i in range(0, REQUEST_NUM):
         cc = geneCreateAccountClause(myList[i].account, myList[i].share)
         ccList.append(cc)
 
@@ -264,17 +265,24 @@ def main():
 
 
 def timeTest():
+    print("request per message: " + str(REQUEST_NUM))   
     global WORK_LOAD
-    for i in range(1, 6):
-        WORK_LOAD = i * 5
+    for i in range(1, 10):
+        WORK_LOAD = i * 5 
         print("now workload is " + str(WORK_LOAD))
         startTime = time.time()
         testCorrectness()
         print("--- %s seconds ---" % (time.time() - startTime))
 
+        print("sleep the thread to cool down")
+        time.sleep(3)
+        print("\n")
 
 if __name__ == '__main__':
     # main()
 
     timeTest()
+    os.system('chmod 777 clear.sh && ./clear.sh')
+    print("file all cleared")
+
 
