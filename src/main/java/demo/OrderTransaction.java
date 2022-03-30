@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.util.Pair;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.xml.crypto.Data;
 
 public class OrderTransaction implements Transaction {
@@ -18,30 +21,33 @@ public class OrderTransaction implements Transaction {
 
     public OrderTransaction(Account account, String sym, double amount, double priceLimit) {
         this.account = account;
-        this.order = new Order(sym, amount, priceLimit);
+        this.order = new Order(account, sym, amount, priceLimit);
     }
 
     @Override
     public Element execute(Document results) {
         Database.addOrder(order);
         Element openedResult = createOpenedResult(results);
-        try {
+        SessionFactory sessionFactory = Database.getSessionFactory();
+        Session session = sessionFactory.openSession();
+        try (session) {
+            org.hibernate.Transaction tx = session.beginTransaction();
             if (isBuyOrder()) {
-                deductBuyOrderCost();
-            }
-            else {
-                deductSellOrderShares();
+                deductBuyOrderCost(session);
+            } else {
+                deductSellOrderShares(session);
             }
             // The relatedOrder is sorted by price limit (descending)
-            List<Order> relatedOrders = Database.getOpenOrdersWithSym(order.getSym());
+            List<Order> relatedOrders = getOpenOrdersWithSym(session, order.getSym());
             while (relatedOrders.size() > 1) {
                 Pair<Order, Order> matchedOrders = findMatchedOrders(relatedOrders);
                 if (matchedOrders == null) {
                     break;
                 }
-                executeMatchedOrders(order, matchedOrders.getKey(), matchedOrders.getValue());
-                relatedOrders = Database.getOpenOrdersWithSym(order.getSym());
+                executeMatchedOrders(session, order, matchedOrders.getKey(), matchedOrders.getValue());
+                relatedOrders = getOpenOrdersWithSym(session, order.getSym());
             }
+            tx.commit();
         }
         catch (Exception e) {
             return createErrorResult(results, e.getMessage());
@@ -53,22 +59,45 @@ public class OrderTransaction implements Transaction {
         return order.getAmount() > 0;
     }
 
-    private void deductBuyOrderCost() {
+    private void deductBuyOrderCost(Session session) {
         double totalCost = order.getAmount() * order.getPriceLimit();
         if (account.getBalance() < totalCost) {
             throw new IllegalArgumentException("The buyer's account does not have enough balance");
         }
         account.setBalance(account.getBalance() - totalCost);
-        SessionFactory sessionFactory = Database.getSessionFactory();
-        Session session = sessionFactory.openSession();
-        org.hibernate.Transaction tx = session.beginTransaction();
         session.update(account);
-        tx.commit();
-        session.close();
     }
 
-    private void deductSellOrderShares() {
+    private void deductSellOrderShares(Session session) {
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Symbol> criteria = builder.createQuery(Symbol.class);
+        Root<Symbol> root = criteria.from(Symbol.class);
+        criteria.select(root).where(builder.equal(root.get("account_id"), account.getAccountNum()),
+                builder.equal(root.get("name"), order.getSym()));
+        List<Symbol> results = session.createQuery(criteria).getResultList();
+        if (results.size() <= 0) {
+            throw new IllegalArgumentException("The seller's account does not have shares of " + order.getSym() + " to sell");
+        }
+        if (results.size() > 1) {
+            throw new IllegalArgumentException("The seller's account has duplicate record of " + order.getSym() + " stock");
+        }
+        Symbol symbol = results.get(0);
+        if (symbol.getShare() < order.getAmount()) {
+            throw new IllegalArgumentException("The seller's account does not have enough shares of " + order.getSym() + " to sell");
+        }
+        symbol.setShare(symbol.getShare() - order.getAmount());
+        session.update(symbol);
+    }
 
+    public List<Order> getOpenOrdersWithSym(Session session, String sym) {
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Order> criteria = builder.createQuery(Order.class);
+        Root<Order> root = criteria.from(Order.class);
+        criteria.select(root).where(builder.equal(root.get("sym"), sym),
+                        builder.equal(root.get("status"), OrderStatus.OPEN))
+                .orderBy(builder.desc(root.get("priceLimit")),
+                        builder.asc(root.get("time")));
+        return session.createQuery(criteria).getResultList();
     }
 
     /**
@@ -120,12 +149,8 @@ public class OrderTransaction implements Transaction {
      * @param buyOrder is the Buy order
      * @param sellOrder is the Sell order
      */
-    public static void executeMatchedOrders(Order currentOrder, Order buyOrder, Order sellOrder) {
+    public void executeMatchedOrders(Session session, Order currentOrder, Order buyOrder, Order sellOrder) {
         try {
-            SessionFactory sessionFactory = Database.getSessionFactory();
-            Session session = sessionFactory.openSession();
-            org.hibernate.Transaction tx = session.beginTransaction();
-
             Order buyOrderToExecute = buyOrder, sellOrderToExecute = sellOrder;
             List<Order> ordersToUpdate = new ArrayList<>();
             ordersToUpdate.add(buyOrder);
@@ -135,14 +160,14 @@ public class OrderTransaction implements Transaction {
             if (buyOrder.getAmount() < (0 - sellOrder.getAmount())) {
                 // It is doing PLUS because the selling amount is negative
                 sellOrder.setAmount(sellOrder.getAmount() + buyOrder.getAmount());
-                sellOrderToExecute = new Order(sellOrder.getSym(), (0 - buyOrderToExecute.getAmount()), transactionPrice);
+                sellOrderToExecute = new Order(sellOrder.getAccount(), sellOrder.getSym(), (0 - buyOrderToExecute.getAmount()), transactionPrice);
                 session.save(sellOrderToExecute);
                 sellOrder.addChildOrder(sellOrderToExecute);
                 ordersToUpdate.add(sellOrderToExecute);
             }
             else if (buyOrder.getAmount() > (0 - sellOrder.getAmount())) {
                 buyOrder.setAmount(buyOrder.getAmount() + sellOrder.getAmount());
-                buyOrderToExecute = new Order(buyOrder.getSym(), (0 - sellOrderToExecute.getAmount()), transactionPrice);
+                buyOrderToExecute = new Order(buyOrder.getAccount(), buyOrder.getSym(), (0 - sellOrderToExecute.getAmount()), transactionPrice);
                 session.save(buyOrderToExecute);
                 buyOrder.addChildOrder(buyOrderToExecute);
                 ordersToUpdate.add(buyOrderToExecute);
@@ -159,8 +184,6 @@ public class OrderTransaction implements Transaction {
             for (Order order : ordersToUpdate) {
                 session.update(order);
             }
-            tx.commit();
-            session.close();
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -177,7 +200,7 @@ public class OrderTransaction implements Transaction {
      * @param sellOrder
      * @return
      */
-    private static double determinePrice(Order currentOrder, Order buyOrder, Order sellOrder) {
+    private double determinePrice(Order currentOrder, Order buyOrder, Order sellOrder) {
         if (buyOrder.getId() == currentOrder.getId()) {
             return sellOrder.getPriceLimit();
         }

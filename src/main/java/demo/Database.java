@@ -95,27 +95,6 @@ public class Database {
         }
     }
 
-    // TODO: Several similar methods, try to refactor
-    public static List<Order> getOpenOrdersWithSym(String sym) {
-        List<Order> results = new ArrayList<Order>();
-        try {
-            Session session = sessionFactory.openSession();
-            CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<Order> criteria = builder.createQuery(Order.class);
-            Root<Order> root = criteria.from(Order.class);
-            criteria.select(root).where(builder.equal(root.get("sym"), sym),
-                            builder.equal(root.get("status"), OrderStatus.OPEN))
-                    .orderBy(builder.desc(root.get("priceLimit")),
-                            builder.asc(root.get("time")));
-            results = session.createQuery(criteria).getResultList();
-            session.close();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return results;
-    }
-
     public static List<Order> getOrdersWithId(String id) {
         List<Order> results = new ArrayList<Order>();
         try {

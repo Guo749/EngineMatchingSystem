@@ -14,7 +14,7 @@ public class Order {
 
     @ManyToOne(cascade = {CascadeType.ALL})
     @JoinColumn(name = "account_id", referencedColumnName = "account_id")
-    private Account account_id;
+    private Account account;
 
     @ManyToOne(cascade = {CascadeType.ALL})
     @JoinColumn(name = "parent_order_id")
@@ -43,7 +43,8 @@ public class Order {
 
     public Order() {}
 
-    public Order(String sym, double amount, double priceLimit) {
+    public Order(Account account, String sym, double amount, double priceLimit) {
+        this.account = account;
         this.sym = sym;
         this.amount = amount;
         this.priceLimit = priceLimit;
@@ -60,8 +61,8 @@ public class Order {
         return id;
     }
 
-    public Account getAccount_id() {
-        return account_id;
+    public Account getAccount() {
+        return account;
     }
 
     public void setParentOrder(Order parentOrder) {

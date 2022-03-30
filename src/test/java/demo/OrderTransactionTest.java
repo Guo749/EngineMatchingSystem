@@ -16,9 +16,9 @@ public class OrderTransactionTest {
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document results = builder.newDocument();
         Database.init();
-        Order buyOrder = new Order("BTC", 30, 90);
+        Account account = new Account(16643, "5533");
+        Order buyOrder = new Order(account, "BTC", 30, 90);
         Database.addOrder(buyOrder);
-        Account account = new Account(12343, "5533");
 
         OrderTransaction transaction1 = new OrderTransaction(account, "BTC", 5, 100);
         transaction1.execute(results);
@@ -30,7 +30,7 @@ public class OrderTransactionTest {
         printAllOrders();
 
         System.out.println("-----------------------");
-        OrderTransaction transaction3 = new OrderTransaction(account, "BTC", -40, 50);
+        OrderTransaction transaction3 = new OrderTransaction(account, "BTC", 40, 120);
         transaction3.execute(results);
         printAllOrders();
     }
