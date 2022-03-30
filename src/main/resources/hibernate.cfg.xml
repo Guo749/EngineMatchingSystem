@@ -12,7 +12,7 @@
     <session-factory>
 
         <!-- note when deploying the docker, needs to change the localhost to be db (docker name for db    -->
-        <property name="connection.url">jdbc:postgresql://localhost:5432/postgres</property> <!-- BD Mane -->
+        <property name="connection.url">jdbc:postgresql://db:5432/postgres</property> <!-- BD Mane -->
         <property name="connection.driver_class">org.postgresql.Driver</property> <!-- DB Driver -->
         <property name="connection.username">postgres</property> <!-- DB User -->
         <property name="connection.password">postgres</property> <!-- DB Password -->

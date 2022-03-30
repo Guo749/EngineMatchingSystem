@@ -4,14 +4,18 @@
 # to generate the msg.txt, which are basically requests
 # and do c times request
 
-for (( c=0; c<$1;c++ ))
+
+ARG1=${1:-1}
+ARG2=${2:-0}
+
+for (( a=0; a<1;a++ ))
+do
+  for (( c=$ARG2; c<$ARG1;c++ ))
   do
      nc localhost 12345 < "./txt/msg$c.txt" > "./txt/out$c.txt" &
-
-     # if not want output, just uncomment this one
-   # nc localhost 12345 < "./txt/msg$c.txt" > /dev/null &
-
+#    nc localhost 12345 < "./txt/msg$c.txt" > /dev/null &
   done
+done
 
 echo "nc localhost 12345 ./txt/msg[0-$c].txt done"
 wait

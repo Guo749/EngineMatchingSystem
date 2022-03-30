@@ -6,8 +6,8 @@ from random import randint
 import time
 
 ACCOUNT_LEN = 20
-WORK_LOAD   = 1
-REQUEST_NUM = 30 
+WORK_LOAD   = 20
+REQUEST_NUM = 30
 
 class Node:
     def __init__(self, account, share):
@@ -43,6 +43,58 @@ def geneCreateSymClause(symbol, list):
     res += "</symbol>"
     return res
 
+
+"""
+This is used to generate the transaction clause
+"""
+def geneTranClause(sym, accountId):
+
+    # create account 123 with 100 spy
+    xml1 = "<?xml version = \"1.0\"?> <create> <account id=\"" + str(accountId) + "\" balance=\"15364\"/>\n"
+    xml1 += "<account id=\"234\" balance=\"56478\"/>\n"
+    xml1 += "<symbol sym=\"" + str(sym) + "\"> <account id=\"" + str(accountId) + "\">100</account> </symbol>\n"
+    xml1 += "</create>\n"
+
+    writeToFile(xml1, 101)
+
+    # Account 123 tries to sell 50 SPY (should success) and then 51 SPY
+    xml2 = "<?xml version = \"1.0\"?> <transactions id=\"" + str(accountId) + "\">\n"
+    xml2 += "<order sym=\"" + str(sym) + "\" amount=\"-50\" limit=\"200\"/>\n"
+    xml2 += "<order sym=\"" + str(sym) + "\" amount=\"-51\" limit=\"14\"/>\n"
+    xml2 += "</transactions>\n"
+
+    writeToFile(xml2, 102)
+
+    xml3 = "<?xml version = \"1.0\"?> <transactions id=\"234\">\n"
+    xml3 += "<order sym=\"" + str(sym) + "\" amount=\"20\" limit=\"210\"/> \n"
+    xml3 += "</transactions>\n"
+
+    writeToFile(xml3, 103)
+
+    xml4 = "<?xml version = \"1.0\"?> <transactions id=\"" + str(accountId) + "\">\n"
+    xml4 += "<order sym=\"" + str(sym) + "\" amount=\"-10\" limit=\"14\"/> \n"
+    xml4 += "<query id=\"2\"/> \n"
+    xml4 += "</transactions>\n"
+
+    writeToFile(xml4, 104)
+
+    xml5 = "<?xml version = \"1.0\"?> <transactions id=\"" + str(accountId) + "\">\n"
+    xml5 += "<cancel id=\"2\"/>\n"
+    xml5 += "</transactions>\n"
+
+    writeToFile(xml5, 105)
+
+    xml6 = "<?xml version = \"1.0\"?> <transactions id=\"" + str(accountId) + "\">\n"
+    xml6 += "<cancel id=\"2\"/> \n"
+    xml6 += "</transactions>\n"
+
+    writeToFile(xml6, 106)
+
+    xml7 = "<?xml version = \"1.0\"?> <transactions id=\"" + str(accountId) + "\">\n"
+    xml7 += "<query id=\"2\"/>\n"
+    xml7 += "</transactions>\n"
+
+    writeToFile(xml7, 107)
 """
 generate symbol list 
 """
@@ -237,6 +289,12 @@ def testBadRequest():
     print("pass bad request test")
 
 
+def testTran():
+    geneTranClause("STM", 123)
+
+    cmd = "./test.sh " + str(108) + " " + str(100)
+    os.system(cmd)
+
 """
 Run all kinds of tests
 """
@@ -253,6 +311,14 @@ def main():
     testBadRequest()
     print("===========================================================\n\n")
 
+    print("====================test transaction========================\n\n")
+    testTran()
+    print("===========================================================\n\n")
+
+    print("====================test time========================\n\n")
+    timeTest()
+    print("===========================================================\n\n")
+
     print("--- all passed ---")
 
     choice = input("do you want to delete the test txt files? [y/n] default no ")
@@ -265,10 +331,10 @@ def main():
 
 
 def timeTest():
-    print("request per message: " + str(REQUEST_NUM))   
+    print("request per message: " + str(REQUEST_NUM))
     global WORK_LOAD
     for i in range(1, 10):
-        WORK_LOAD = i * 5 
+        WORK_LOAD = i * 5
         print("now workload is " + str(WORK_LOAD))
         startTime = time.time()
         testCorrectness()
@@ -279,10 +345,6 @@ def timeTest():
         print("\n")
 
 if __name__ == '__main__':
-    # main()
-
-    timeTest()
-    os.system('chmod 777 clear.sh && ./clear.sh')
-    print("file all cleared")
+    main()
 
 
