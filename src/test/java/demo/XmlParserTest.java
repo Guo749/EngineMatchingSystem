@@ -182,17 +182,31 @@ public class XmlParserTest {
     public void testParseOrderTransactions() throws ParserConfigurationException, IOException, SAXException, SQLException, ClassNotFoundException {
         Database.init();
 //        Database.createAccount(new Account(15634, "134"));
-        String xml = "<?xml version = \"1.0\"?> <create> <account id=\"134\" balance=\"15364\"/> " +
-                "<symbol sym=\"SPY\"> <account id=\"134\">10</account> </symbol>" +
+        // Create account 123 and 234, add 100 SPY to account 123
+        String xml = "<?xml version = \"1.0\"?> <create> <account id=\"123\" balance=\"15364\"/> " +
+                "<account id=\"234\" balance=\"56478\"/> " +
+                "<symbol sym=\"SPY\"> <account id=\"123\">100</account> </symbol>" +
                 "</create>";
         XmlParser xmlParser = new XmlParser();
         xmlParser.processXML(xml);
-        xml = "<?xml version = \"1.0\"?> <transactions id=\"134\">" + "" +
-                "<order sym=\"SPY\" amount=\"-100\" limit=\"145.67\"/> " +
-                "<order sym=\"SPY\" amount=\"-9\" limit=\"14\"/> " +
+        // Account 123 tries to sell 50 SPY (should success) and then 51 SPY (should fail)
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" + "" +
+                "<order sym=\"SPY\" amount=\"-50\" limit=\"200\"/> " +
+                "<order sym=\"SPY\" amount=\"-51\" limit=\"14\"/> " +
                 "</transactions>";
         xmlParser.processXML(xml);
-        Account account = Database.checkAccountIdExistsAndGetIt(134);
+        // Account 234 tries to buy 20 SPY (should success)
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" + "" +
+                "<order sym=\"SPY\" amount=\"20\" limit=\"210\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+        // Account 123 tries to query the status of the first order (should be 20 open and 30 executed)
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" + "" +
+                "<order sym=\"SPY\" amount=\"-10\" limit=\"14\"/> " +
+                "<query id=\"2\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+        Account account = Database.checkAccountIdExistsAndGetIt(123);
         System.out.println(account.getBalance());
 //        List<Element> transactionList = getTransactionList(xml);
 

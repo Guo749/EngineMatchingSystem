@@ -189,6 +189,7 @@ public class OrderTransaction implements Transaction {
             }
 
             // If buyOrder amount == sellOrder amount, the buy/sellOrderToExecute is unchanged (original buy/sellOrder)
+            // TODO: Set the time of execution
             buyOrderToExecute.setStatus(OrderStatus.EXECUTED);
             sellOrderToExecute.setStatus(OrderStatus.EXECUTED);
             buyOrderToExecute.setPriceLimit(transactionPrice);
