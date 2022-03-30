@@ -241,27 +241,27 @@ def testBadRequest():
 Run all kinds of tests
 """
 def main():
-    print("====================test correctness=======================")
-    testCorrectness()
-    print("===========================================================\n\n")
+#    print("====================test correctness=======================")
+#    testCorrectness()
+#    print("===========================================================\n\n")
 
-    print("====================test error duplicate===================")
-    testCreateDuplicateAccount()
-    print("===========================================================\n\n")
+ #   print("====================test error duplicate===================")
+ #   testCreateDuplicateAccount()
+ #   print("===========================================================\n\n")
 
     print("====================test bad request=======================")
     testBadRequest()
     print("===========================================================\n\n")
 
-    print("--- all passed ---")
+#    print("--- all passed ---")
 
-    choice = input("do you want to delete the test txt files? [y/n] default no ")
+#    choice = input("do you want to delete the test txt files? [y/n] default no ")
 
-    if choice == "y":
-        os.system('chmod 777 clear.sh && ./clear.sh')
-        print("file all cleared")
-    else:
-        print("file saved")
+#    if choice == "y":
+ #       os.system('chmod 777 clear.sh && ./clear.sh')
+  #      print("file all cleared")
+   # else:
+    #    print("file saved")
 
 
 def timeTest():
@@ -279,10 +279,10 @@ def timeTest():
         print("\n")
 
 if __name__ == '__main__':
-    # main()
+    while 1 == 1:
+        main()
+        time.sleep(0.5)
+        print("sleep 0.5second, now send bad request again")
 
-    timeTest()
-    os.system('chmod 777 clear.sh && ./clear.sh')
-    print("file all cleared")
 
 
