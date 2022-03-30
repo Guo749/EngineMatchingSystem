@@ -181,7 +181,6 @@ public class XmlParserTest {
     @Test
     public void testParseOrderTransactions() throws ParserConfigurationException, IOException, SAXException, SQLException, ClassNotFoundException {
         Database.init();
-//        Database.createAccount(new Account(15634, "134"));
         // Create account 123 and 234, add 100 SPY to account 123
         String xml = "<?xml version = \"1.0\"?> <create> <account id=\"123\" balance=\"15364\"/> " +
                 "<account id=\"234\" balance=\"56478\"/> " +
@@ -189,60 +188,53 @@ public class XmlParserTest {
                 "</create>";
         XmlParser xmlParser = new XmlParser();
         xmlParser.processXML(xml);
+
         // Account 123 tries to sell 50 SPY (should success) and then 51 SPY (should fail)
-        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" + "" +
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
                 "<order sym=\"SPY\" amount=\"-50\" limit=\"200\"/> " +
                 "<order sym=\"SPY\" amount=\"-51\" limit=\"14\"/> " +
                 "</transactions>";
         xmlParser.processXML(xml);
+
         // Account 234 tries to buy 20 SPY (should success)
-        xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" + "" +
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" +
                 "<order sym=\"SPY\" amount=\"20\" limit=\"210\"/> " +
                 "</transactions>";
         xmlParser.processXML(xml);
-        // Account 123 tries to query the status of the first order (should be 20 open and 30 executed)
-        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" + "" +
+
+        // Account 123 tries to query the status of the first order (should be -30 open and 20 executed)
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
                 "<order sym=\"SPY\" amount=\"-10\" limit=\"14\"/> " +
                 "<query id=\"2\"/> " +
                 "</transactions>";
         xmlParser.processXML(xml);
+
+        // Account 123 tries to cancel the first order (should be -30 canceled and 20 executed)
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
+                "<cancel id=\"2\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+
+        // Account 123 tries to cancel the first order (should fail because there is no open order)
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
+                "<cancel id=\"2\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+
+        // Account 123 tries to query the status of the first order again (should be -30 canceled and 20 executed)
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
+                "<order sym=\"SPY\" amount=\"-10\" limit=\"14\"/> " +
+                "<query id=\"2\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+
         Account account = Database.checkAccountIdExistsAndGetIt(123);
         System.out.println(account.getBalance());
-//        List<Element> transactionList = getTransactionList(xml);
-
-//        assertEquals(1, transactionList.size());
-//        assertEquals(OrderTransaction.class, transactionList.get(0).getClass());
-//        Order order = ((OrderTransaction) transactionList.get(0)).getOrder();
-//        assertEquals("SPY", order.getSym());
-//        assertEquals(100, order.getAmount(), 0.001);
-//        assertEquals(145.67, order.getPriceLimit(), 0.001);
+        account = Database.checkAccountIdExistsAndGetIt(234);
+        System.out.println(account.getBalance());
     }
-//
-//    @Test
-//    public void testParseQueryAndCancelTransactions() throws ParserConfigurationException, IOException, SAXException {
-//        String xml = "<?xml version = \"1.0\"?> <transactions id=\"1234\"> " +
-//                "<order sym=\"SPY\" amount=\"100\" limit=\"145.67\"/>" +
-//                "<query id=\"853\"/>" +
-//                "<cancel id=\"6996\"/>" +
-//                " </transactions>";
-//        List<Transaction> transactionList = getTransactionList(xml);
-//        assertEquals(3, transactionList.size());
-//
-//        assertEquals(QueryTransaction.class, transactionList.get(1).getClass());
-//        QueryTransaction queryTransaction = (QueryTransaction) transactionList.get(1);
-//        assertEquals(1234, queryTransaction.getAccountId());
-//        assertEquals(853, queryTransaction.getTransactionId());
-//
-//        assertEquals(CancelTransaction.class, transactionList.get(2).getClass());
-//        CancelTransaction cancelTransaction = (CancelTransaction) transactionList.get(2);
-//        assertEquals(1234, cancelTransaction.getAccountId());
-//        assertEquals(6996, cancelTransaction.getTransactionId());
-//    }
-
-
 
     /*********************** Helper Method **********************************/
-
 
     private List<Element> getTransactionList(String xml) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

@@ -17,7 +17,7 @@ import java.util.*;
  *  1. creat the account
  *  2. put the symbol in account
  */
-public class CreateOrderTransaction implements Transaction{
+public class CreateOrderTransaction extends Transaction{
     /* the action we should execute */
     private final List<Command> actions;
 

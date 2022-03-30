@@ -17,7 +17,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import javax.xml.crypto.Data;
 
-public class OrderTransaction implements Transaction {
+public class OrderTransaction extends Transaction {
     private Account account;
     private Order order;
 
@@ -52,7 +52,7 @@ public class OrderTransaction implements Transaction {
             tx.commit();
         }
         catch (Exception e) {
-            return createErrorResult(results, e.getMessage());
+            return createErrorResultForOrderTrans(results, e.getMessage());
         }
         return openedResult;
     }
@@ -238,7 +238,7 @@ public class OrderTransaction implements Transaction {
         return opened;
     }
 
-    private Element createErrorResult(Document results, String errorMsg) {
+    private Element createErrorResultForOrderTrans(Document results, String errorMsg) {
         Element error = results.createElement("error");
         setOrderAttributes(error);
         error.appendChild(results.createTextNode("Error when executing the order: " + errorMsg));
