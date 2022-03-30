@@ -95,6 +95,19 @@ public class Database {
         }
     }
 
+    public static void addSymbol(Symbol symbol) {
+        try {
+            Session session = sessionFactory.openSession();
+            org.hibernate.Transaction tx = session.beginTransaction();
+            session.save(symbol);
+            tx.commit();
+            session.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static List<Order> getOrdersWithId(String id) {
         List<Order> results = new ArrayList<Order>();
         try {

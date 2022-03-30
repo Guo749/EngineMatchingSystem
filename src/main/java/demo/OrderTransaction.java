@@ -8,6 +8,8 @@ import org.w3c.dom.Element;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 import javafx.util.Pair;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -59,6 +61,10 @@ public class OrderTransaction implements Transaction {
         return order.getAmount() > 0;
     }
 
+    /**
+     * When a buy order is placed, this method will deduct the total cost from the buyer's account
+     * @param session is the database session
+     */
     private void deductBuyOrderCost(Session session) {
         double totalCost = order.getAmount() * order.getPriceLimit();
         if (account.getBalance() < totalCost) {
@@ -68,6 +74,10 @@ public class OrderTransaction implements Transaction {
         session.update(account);
     }
 
+    /**
+     * When a sell order is placed, this method will deduct the shares from the seller's account
+     * @param session is the database session
+     */
     private void deductSellOrderShares(Session session) {
         CriteriaBuilder builder = session.getCriteriaBuilder();
         CriteriaQuery<Symbol> criteria = builder.createQuery(Symbol.class);
@@ -82,10 +92,10 @@ public class OrderTransaction implements Transaction {
             throw new IllegalArgumentException("The seller's account has duplicate record of " + order.getSym() + " stock");
         }
         Symbol symbol = results.get(0);
-        if (symbol.getShare() < order.getAmount()) {
+        if (symbol.getShare() < (0 - order.getAmount())) {
             throw new IllegalArgumentException("The seller's account does not have enough shares of " + order.getSym() + " to sell");
         }
-        symbol.setShare(symbol.getShare() - order.getAmount());
+        symbol.setShare(symbol.getShare() + order.getAmount());
         session.update(symbol);
     }
 
@@ -104,13 +114,11 @@ public class OrderTransaction implements Transaction {
      * Try to find two orders that can be matched and executed from the order list
      * @param orders is the order list
      * @return a pair of orders. The key is the Buy order, and the value is the Sell order
-     * TODO: Cannot match Buy and Sell orders from the same account. Perhaps solve it by getting the first order
-     *       that is not this account's order or is the current order, but need to prove the correctness.
      */
     private Pair<Order, Order> findMatchedOrders(List<Order> orders) {
         Integer firstBuyOrderIndex = null;
         for (int i = 0; i < orders.size(); i++) {
-            if (orders.get(i).getAmount() > 0) {
+            if (orders.get(i).getAmount() > 0 && isValidOrder(orders.get(i))) {
                 firstBuyOrderIndex = i;
                 break;
             }
@@ -122,7 +130,7 @@ public class OrderTransaction implements Transaction {
         // Find the first Sell order after the Buy order
         Integer firstSellOrderIndex = null;
         for (int i = firstBuyOrderIndex + 1; i < orders.size(); i++) {
-            if (orders.get(i).getAmount() < 0) {
+            if (orders.get(i).getAmount() < 0 && isValidOrder(orders.get(i))) {
                 firstSellOrderIndex = i;
                 break;
             }
@@ -133,6 +141,13 @@ public class OrderTransaction implements Transaction {
         }
         // Already got a Buy order and a Sell order => Match them
         return new Pair<>(orders.get(firstBuyOrderIndex), orders.get(firstSellOrderIndex));
+    }
+
+    private boolean isValidOrder(Order orderToCheck) {
+        if (orderToCheck.getId() == order.getId()) {
+            return true;
+        }
+        return !Objects.equals(orderToCheck.getAccount().getAccountNum(), account.getAccountNum());
     }
 
     /**

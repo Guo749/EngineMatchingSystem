@@ -181,9 +181,16 @@ public class XmlParserTest {
     @Test
     public void testParseOrderTransactions() throws ParserConfigurationException, IOException, SAXException, SQLException, ClassNotFoundException {
         Database.init();
-        Database.createAccount(new Account(15634, "134"));
-        String xml = "<?xml version = \"1.0\"?> <transactions id=\"134\"> <order sym=\"SPY\" amount=\"100\" limit=\"145.67\"/> </transactions>";
+//        Database.createAccount(new Account(15634, "134"));
+        String xml = "<?xml version = \"1.0\"?> <create> <account id=\"134\" balance=\"15364\"/> " +
+                "<symbol sym=\"SPY\"> <account id=\"134\">10</account> </symbol>" +
+                "</create>";
         XmlParser xmlParser = new XmlParser();
+        xmlParser.processXML(xml);
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"134\">" + "" +
+                "<order sym=\"SPY\" amount=\"-100\" limit=\"145.67\"/> " +
+                "<order sym=\"SPY\" amount=\"-9\" limit=\"14\"/> " +
+                "</transactions>";
         xmlParser.processXML(xml);
         Account account = Database.checkAccountIdExistsAndGetIt(134);
         System.out.println(account.getBalance());

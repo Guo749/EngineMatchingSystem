@@ -25,6 +25,7 @@
 
         <mapping class="demo.Account"/>
         <mapping class="demo.Order"/>
+	<mapping class="demo.Symbol"/>
 
     </session-factory>
 </hibernate-configuration>
