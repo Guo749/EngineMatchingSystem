@@ -1,5 +1,6 @@
 package demo;
 
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class CancelTransaction implements Transaction {
@@ -12,8 +13,8 @@ public class CancelTransaction implements Transaction {
     }
 
     @Override
-    public void execute() {
-
+    public Element execute(Document results) {
+        return results.createElement("canceled");
     }
 
     public int getAccountId() {

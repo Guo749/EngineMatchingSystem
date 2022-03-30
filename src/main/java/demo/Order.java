@@ -60,6 +60,10 @@ public class Order {
         return id;
     }
 
+    public Account getAccount_id() {
+        return account_id;
+    }
+
     public void setParentOrder(Order parentOrder) {
         this.parentOrder = parentOrder;
     }

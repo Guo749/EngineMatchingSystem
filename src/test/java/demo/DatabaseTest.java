@@ -16,7 +16,8 @@ public class DatabaseTest {
     }
 
     @Test
-    public void testInsertOrder() throws InterruptedException {
+    public void testInsertOrder() throws InterruptedException, SQLException, ClassNotFoundException {
+        Database.init();
         Order order1 = new Order("BTC", 12, 3223);
         Order order2 = new Order("USD", 233, 6879);
         Order order3 = new Order("CNY", 3456, 978);

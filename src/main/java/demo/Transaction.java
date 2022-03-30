@@ -6,5 +6,5 @@ public interface Transaction {
     /**
      * TODO: Perhaps return the execution result
      */
-    void execute();
+    Element execute(Document results);
 }

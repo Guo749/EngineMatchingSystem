@@ -1,27 +1,36 @@
 package demo;
 
 import org.junit.jupiter.api.Test;
+import org.w3c.dom.Document;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.sql.SQLException;
 import java.util.List;
 
 public class OrderTransactionTest {
     @Test
-    public void testExecuteOrder() {
-        Order buyOrder = new Order("BTC", 30, 200);
+    public void testExecuteOrder() throws SQLException, ClassNotFoundException, ParserConfigurationException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document results = builder.newDocument();
+        Database.init();
+        Order buyOrder = new Order("BTC", 30, 90);
         Database.addOrder(buyOrder);
 
-        OrderTransaction transaction1 = new OrderTransaction(5345, "BTC", -5, 100);
-        transaction1.execute();
+        OrderTransaction transaction1 = new OrderTransaction(5345, "BTC", 5, 100);
+        transaction1.execute(results);
         printAllOrders();
 
         System.out.println("-----------------------");
-        OrderTransaction transaction2 = new OrderTransaction(1455, "BTC", -15, 110);
-        transaction2.execute();
+        OrderTransaction transaction2 = new OrderTransaction(1455, "BTC", -60, 80);
+        transaction2.execute(results);
         printAllOrders();
 
         System.out.println("-----------------------");
         OrderTransaction transaction3 = new OrderTransaction(1455, "BTC", -40, 50);
-        transaction3.execute();
+        transaction3.execute(results);
         printAllOrders();
     }
 
