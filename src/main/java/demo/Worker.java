@@ -47,7 +47,14 @@ public class Worker extends Thread{
             /* step4: write it back the result */
             writeToClient(client, sb.toString());
         }catch (Exception e){
+            /* if code reach here, it means usually the request is in bad format, or the connection
+            *  with the client is just shutdown the connection
+            *  */
             e.printStackTrace();
+            String reply = getErrorReply();
+            StringBuilder sb = new StringBuilder();
+            sb.append(reply.length()).append("\n").append(reply);
+            writeToClient(client, sb.toString());
         }finally {
             try {
                 if(this.in != null)
@@ -63,6 +70,8 @@ public class Worker extends Thread{
             }
         }
     }
+
+
 
 
     /**
@@ -117,6 +126,17 @@ public class Worker extends Thread{
         }
 
         return res.toString();
+    }
+
+    /**
+     * This is used when a severe exception happens and we
+     * do not do any of the command, just return error code directly
+     * @return
+     */
+    private String getErrorReply() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<results>Bad Request</results>");
+        return sb.toString();
     }
 
     /**

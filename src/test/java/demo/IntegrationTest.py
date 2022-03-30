@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-
+import socket
 import sys
 import os
 from random import randint
+import time
 
 ACCOUNT_LEN=20
-WORK_LOAD=10
+WORK_LOAD=30
 
 class Node:
     def __init__(self, account, share):
@@ -62,7 +63,7 @@ def getAccountId(line):
         j += 1
     return accountId
 
-def processLines(lines):
+def processLines(lines, errorTest):
     # this is what I expect
     res = []
     index = 0
@@ -74,10 +75,13 @@ def processLines(lines):
         if balanceID in lines[index]:
             accountId = getAccountId(lines[index].strip())
 
-            target = "<created id=\"" + accountId + "\"/>"
+            if errorTest:
+                target = "<error id=\"" + str(accountId) + "\">Account already exists</error>"
+            else:
+                target = "<created id=\"" + accountId + "\"/>"
             res.append(target)
 
-        elif symbolID in lines[index]:
+        elif symbolID in lines[index] and not errorTest:
             j = 0
             while lines[index][j] != '"':
                 j += 1
@@ -145,14 +149,14 @@ def prepareDoc():
         msg = generateWorkLoad()
         writeToFile(msg, i)
 
-def compare(msgFile, outFile):
+def compare(msgFile, outFile, errorTest):
     file1 = open(msgFile, 'r')
     file2 = open(outFile, 'r')
     lines1 = file1.readlines()
     lines2 = file2.readlines()
 
     # Strips the newline character
-    expected = processLines(lines1)
+    expected = processLines(lines1, errorTest)
     index1 = 0
     index2 = 0
 
@@ -164,12 +168,17 @@ def compare(msgFile, outFile):
             index2 += 1
 
     if index1 == len(expected):
-        print("test " + str(msgFile) +" passed")
+        pass
     else:
         print("error found in " + msgFile + " AND " + outFile)
         sys.exit(1)
 
-def main():
+
+
+"""
+Test in normal situation, if they can work correctly
+"""
+def testCorrectness():
     # step1: run generate cases
     prepareDoc()
 
@@ -182,8 +191,76 @@ def main():
         msg = './txt/msg' + str(i) + '.txt'
         out = './txt/out' + str(i) + '.txt'
 
-        compare(msg, out)
+        compare(msg, out, False)
+    print("correctness passed")
 
+"""
+the idea is to first execute the command
+but instead of check it immediately, we do that again
+and thus the output should not be correct
+"""
+def testCreateDuplicateAccount():
+    # step1: first we do it in normal way
+    testCorrectness()
+
+    # step2: we do that command again, check if we have exist
+    cmd = './test.sh ' + str(WORK_LOAD)
+    os.system(cmd)
+
+    for i in range(0, WORK_LOAD):
+        msg = './txt/msg' + str(i) + '.txt'
+        out = './txt/out' + str(i) + '.txt'
+
+        compare(msg, out, True)
+    print("error test passed ")
+
+def testBadRequest():
+    HOST = "127.0.0.1"
+    PORT = 12345
+
+    badRequests = ["<create> </", "<create> </create>", "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"]
+    for i in range(0, len(badRequests)):
+        print("send bad request " + badRequests[i])
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((HOST, PORT))
+            s.sendall(badRequests[i].encode())
+            data = s.recv(1024)
+            s.close()
+
+            decodeData = data.decode()
+            if "Bad Request" in decodeData:
+                pass
+            else:
+                print("bad request with server no error flag")
+                sys.exit(1)
+    print("pass bad request test")
+
+
+"""
+Run all kinds of tests
+"""
+def main():
+    print("====================test correctness=======================")
+    testCorrectness()
+    print("===========================================================\n\n")
+
+    print("====================test error duplicate===================")
+    testCreateDuplicateAccount()
+    print("===========================================================\n\n")
+
+    print("====================test bad request=======================")
+    testBadRequest()
+    print("===========================================================\n\n")
+
+    print("--- all passed ---")
+
+    choice = input("do you want to delete the test txt files? [y/n] default no ")
+
+    if choice == "y":
+        os.system('chmod 777 clear.sh && ./clear.sh')
+        print("file all cleared")
+    else:
+        print("file saved")
 
 if __name__ == '__main__':
     main()

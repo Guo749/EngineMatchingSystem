@@ -22,7 +22,10 @@ public class Server{
     /* the stream we read from the client */
     public DataInputStream in          =  null;
 
+    /* how many threads are allowed in this app */
     public static final int MAX_THREAD_ALLOWED = 20;
+
+    /* the thread pool for this app */
     public static final ExecutorService threadPool = Executors.newFixedThreadPool(MAX_THREAD_ALLOWED);
 
     public Server(int port) throws IOException, ClassNotFoundException, SQLException {
