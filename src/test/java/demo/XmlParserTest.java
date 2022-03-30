@@ -223,7 +223,6 @@ public class XmlParserTest {
 
         // Account 123 tries to query the status of the first order again (should be -30 canceled and 20 executed)
         xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
-                "<order sym=\"SPY\" amount=\"-10\" limit=\"14\"/> " +
                 "<query id=\"2\"/> " +
                 "</transactions>";
         xmlParser.processXML(xml);

@@ -15,7 +15,6 @@ import javafx.util.Pair;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import javax.xml.crypto.Data;
 
 public class OrderTransaction extends Transaction {
     private Account account;
@@ -195,7 +194,9 @@ public class OrderTransaction extends Transaction {
             buyOrderToExecute.setPriceLimit(transactionPrice);
             sellOrderToExecute.setPriceLimit(transactionPrice);
 
-            // TODO: Change the seller’s account balance and the buyer’s number of shares, and possibly refund some money to the buyer
+            creditSellerAccountBalance(session, sellOrderToExecute);
+            creditBuyerAccountShares(session, buyOrderToExecute);
+            // TODO: The buyer's may have some refund
 
             for (Order order : ordersToUpdate) {
                 session.update(order);
@@ -228,6 +229,33 @@ public class OrderTransaction extends Transaction {
         }
         else {
             return buyOrder.getPriceLimit();
+        }
+    }
+
+    private void creditSellerAccountBalance(Session session, Order executedSellOrder) {
+        double totalEarned = executedSellOrder.getAmount() * (0 - executedSellOrder.getPriceLimit());
+        Account seller = executedSellOrder.getAccount();
+        seller.setBalance(seller.getBalance() + totalEarned);
+        session.update(seller);
+    }
+
+    private void creditBuyerAccountShares(Session session, Order executedBuyOrder) {
+        double shares = executedBuyOrder.getAmount();
+        CriteriaBuilder builder = session.getCriteriaBuilder();
+        CriteriaQuery<Symbol> criteria = builder.createQuery(Symbol.class);
+        Root<Symbol> root = criteria.from(Symbol.class);
+        criteria.select(root).where(builder.equal(root.get("account_id"), executedBuyOrder.getAccount().getAccountNum()),
+                builder.equal(root.get("name"), executedBuyOrder.getSym()));
+        List<Symbol> results = session.createQuery(criteria).getResultList();
+        if (results.size() <= 0) {
+            Symbol newSymbol = new Symbol(executedBuyOrder.getSym(), executedBuyOrder.getAccount().getAccountNum(),
+                    executedBuyOrder.getAmount());
+            session.save(newSymbol);
+        }
+        else {
+            Symbol currentSymbol = results.get(0);
+            currentSymbol.setShare(currentSymbol.getShare() + executedBuyOrder.getAmount());
+            session.update(currentSymbol);
         }
     }
 
