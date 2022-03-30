@@ -6,7 +6,7 @@ from random import randint
 import time
 
 ACCOUNT_LEN=20
-WORK_LOAD=30
+WORK_LOAD=1
 
 class Node:
     def __init__(self, account, share):
@@ -262,5 +262,19 @@ def main():
     else:
         print("file saved")
 
+
+def timeTest():
+    global WORK_LOAD
+    for i in range(1, 6):
+        WORK_LOAD = i * 5
+        print("now workload is " + str(WORK_LOAD))
+        startTime = time.time()
+        testCorrectness()
+        print("--- %s seconds ---" % (time.time() - startTime))
+
+
 if __name__ == '__main__':
-    main()
+    # main()
+
+    timeTest()
+
