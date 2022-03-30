@@ -1,6 +1,8 @@
 package demo;
 
 import jdk.jfr.Description;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
@@ -16,11 +18,13 @@ public class DatabaseTest {
     }
 
     @Test
-    public void testInsertOrder() throws InterruptedException {
-        Order order1 = new Order("BTC", 12, 3223);
-        Order order2 = new Order("USD", 233, 6879);
-        Order order3 = new Order("CNY", 3456, 978);
-        Order order4 = new Order("USD", 2467, 63);
+    public void testInsertOrder() throws InterruptedException, SQLException, ClassNotFoundException {
+        Database.init();
+        Account account = new Account(3242, "124");
+        Order order1 = new Order(account, "BTC", 12, 3223);
+        Order order2 = new Order(account, "USD", 233, 6879);
+        Order order3 = new Order(account, "CNY", 3456, 978);
+        Order order4 = new Order(account, "USD", 2467, 63);
         order1.addChildOrder(order2);
         order2.addChildOrder(order3);
         order1.addChildOrder(order4);
@@ -37,22 +41,6 @@ public class DatabaseTest {
                 System.out.println("parent: "+ order.getParentOrder().getId());
             }
             System.out.println("num of child orders: " + order.getChildOrders().size());
-        }
-
-        List<Order> USDOrders = Database.getOpenOrdersWithSym("USD");
-        for (Order order : USDOrders) {
-            System.out.println(order.getId() + " " + order.getSym() + " " + order.getAmount() + " " +
-                    order.getPriceLimit() + " " + order.getTime());
-        }
-
-        USDOrders.get(0).setAmount(87443);
-        List<Order> ordersToUpdate = new ArrayList<>();
-        ordersToUpdate.add(USDOrders.get(0));
-        Database.updateOrders(ordersToUpdate);
-        USDOrders = Database.getOpenOrdersWithSym("USD");
-        for (Order order : USDOrders) {
-            System.out.println(order.getId() + " " + order.getSym() + " " + order.getAmount() + " " +
-                    order.getPriceLimit() + " " + order.getTime());
         }
     }
 

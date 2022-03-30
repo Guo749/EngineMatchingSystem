@@ -28,7 +28,7 @@ public class Database {
             System.out.println("begin initialized db");
             Class.forName("org.postgresql.Driver");
             Connection conn                                     //change it to localhost if you want connect with local db
-                = DriverManager.getConnection("jdbc:postgresql://db:5432/postgres", "postgres", "postgres");
+                = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
 
             conn.setAutoCommit(false);
 
@@ -58,6 +58,26 @@ public class Database {
         }
     }
 
+    public static Account checkAccountIdExistsAndGetIt(int accountId) {
+        List<Account> results = null;
+        try {
+            Session session = sessionFactory.openSession();
+            CriteriaBuilder builder = session.getCriteriaBuilder();
+            CriteriaQuery<Account> criteria = builder.createQuery(Account.class);
+            Root<Account> root = criteria.from(Account.class);
+            criteria.select(root).where(builder.equal(root.get("account_id"), Integer.toString(accountId)));
+            results = session.createQuery(criteria).getResultList();
+            session.close();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (results == null || results.size() <= 0) {
+            throw new IllegalArgumentException("Account does not exist");
+        }
+        return results.get(0);
+    }
+
     /**
      * Used to add an order to the database
      * @param order is the order to add to the database
@@ -75,110 +95,17 @@ public class Database {
         }
     }
 
-    /**
-     * Given a pair of matched orders, try to execute them and update the database correspondingly.
-     * There are 3 cases:
-     * - buying amount == selling amount => mark original buyOrder and sellOrder as executed
-     * - buying amount < selling amount => {
-     *     original sellOrder amount -= buying amount
-     *     original sellOrder is kept open
-     *     create a new sell order, amount = buying amount
-     *     mark the new sell order and the original buy order as executed
-     * }
-     * - buying amount > selling amount => similar to the above case
-     * @param buyOrder is the Buy order
-     * @param sellOrder is the Sell order
-     */
-    public static void executeMatchedOrders(Order currentOrder, Order buyOrder, Order sellOrder) {
+    public static void addSymbol(Symbol symbol) {
         try {
             Session session = sessionFactory.openSession();
             org.hibernate.Transaction tx = session.beginTransaction();
-
-            Order buyOrderToExecute = buyOrder, sellOrderToExecute = sellOrder;
-            List<Order> ordersToUpdate = new ArrayList<>();
-            ordersToUpdate.add(buyOrder);
-            ordersToUpdate.add(sellOrder);
-
-            double transactionPrice = determinePrice(currentOrder, buyOrder, sellOrder);
-            if (buyOrder.getAmount() < (0 - sellOrder.getAmount())) {
-                // It is doing PLUS because the selling amount is negative
-                sellOrder.setAmount(sellOrder.getAmount() + buyOrder.getAmount());
-                sellOrderToExecute = new Order(sellOrder.getSym(), (0 - buyOrderToExecute.getAmount()), transactionPrice);
-                session.save(sellOrderToExecute);
-                sellOrder.addChildOrder(sellOrderToExecute);
-                ordersToUpdate.add(sellOrderToExecute);
-            }
-            else if (buyOrder.getAmount() > (0 - sellOrder.getAmount())) {
-                buyOrder.setAmount(buyOrder.getAmount() + sellOrder.getAmount());
-                buyOrderToExecute = new Order(buyOrder.getSym(), (0 - sellOrderToExecute.getAmount()), transactionPrice);
-                session.save(buyOrderToExecute);
-                buyOrder.addChildOrder(buyOrderToExecute);
-                ordersToUpdate.add(buyOrderToExecute);
-            }
-
-            // If buyOrder amount == sellOrder amount, the buy/sellOrderToExecute is unchanged (original buy/sellOrder)
-            buyOrderToExecute.setStatus(OrderStatus.EXECUTED);
-            sellOrderToExecute.setStatus(OrderStatus.EXECUTED);
-            buyOrderToExecute.setPriceLimit(transactionPrice);
-            sellOrderToExecute.setPriceLimit(transactionPrice);
-
-            // TODO: Change the seller’s account balance and the buyer’s number of shares
-
-            for (Order order : ordersToUpdate) {
-                session.update(order);
-            }
+            session.save(symbol);
             tx.commit();
             session.close();
         }
         catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Determine the price for executing the matched orders. The price should be the early order (the order
-     * that have been in the database). So first check whether one of the order is the currentOrder (newly added
-     * to the database). If yes, the other order's price should be the executing price.
-     * Otherwise, use the earlier order.
-     * @param currentOrder
-     * @param buyOrder
-     * @param sellOrder
-     * @return
-     */
-    private static double determinePrice(Order currentOrder, Order buyOrder, Order sellOrder) {
-        if (buyOrder.getId() == currentOrder.getId()) {
-            return sellOrder.getPriceLimit();
-        }
-        if (sellOrder.getId() == currentOrder.getId()) {
-            return buyOrder.getPriceLimit();
-        }
-        if (sellOrder.getTime() < buyOrder.getTime()) {
-            return sellOrder.getPriceLimit();
-        }
-        else {
-            return buyOrder.getPriceLimit();
-        }
-    }
-
-    // TODO: Several similar methods, try to refactor
-    public static List<Order> getOpenOrdersWithSym(String sym) {
-        List<Order> results = new ArrayList<Order>();
-        try {
-            Session session = sessionFactory.openSession();
-            CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<Order> criteria = builder.createQuery(Order.class);
-            Root<Order> root = criteria.from(Order.class);
-            criteria.select(root).where(builder.equal(root.get("sym"), sym),
-                            builder.equal(root.get("status"), OrderStatus.OPEN))
-                    .orderBy(builder.desc(root.get("priceLimit")),
-                            builder.asc(root.get("time")));
-            results = session.createQuery(criteria).getResultList();
-            session.close();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return results;
     }
 
     public static List<Order> getOrdersWithId(String id) {

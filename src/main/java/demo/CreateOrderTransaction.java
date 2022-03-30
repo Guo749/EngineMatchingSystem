@@ -3,6 +3,8 @@ package demo;
 import javafx.util.Pair;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -15,7 +17,7 @@ import java.util.*;
  *  1. creat the account
  *  2. put the symbol in account
  */
-public class CreateOrderTransaction implements Transaction{
+public class CreateOrderTransaction extends Transaction{
     /* the action we should execute */
     private final List<Command> actions;
 
@@ -34,7 +36,7 @@ public class CreateOrderTransaction implements Transaction{
 
 
     @Override
-    public void execute() {
+    public Element execute(Document results) {
         SessionFactory sessionFactory = Database.getSessionFactory();
 
         try{
@@ -99,6 +101,8 @@ public class CreateOrderTransaction implements Transaction{
             }
         }
 
+        // TODO: Useless return to make this method comply with the interface
+        return results.createElement("temp");
     }
 
     /**

@@ -4,6 +4,11 @@ import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -33,6 +38,7 @@ public class XmlParser {
 
         ByteArrayInputStream input = new ByteArrayInputStream(xmlStringBuilder.toString().getBytes("UTF-8"));
         Document doc = builder.parse(input);
+        Document resultsDoc = builder.newDocument();
 
         doc.getDocumentElement().normalize();
         String rootEle = doc.getDocumentElement().getNodeName();
@@ -45,12 +51,13 @@ public class XmlParser {
             }
 
             CreateOrderTransaction cot = new CreateOrderTransaction(actions);
-            cot.execute();
+            cot.execute(resultsDoc);
             return formCreateReply(actions);
         }else if(TRANS_TAG.equals(rootEle)){// about <transactions> </tran>
-            // TODO: Should this be parseAndExecuteTransactions and return the execution results?
-            List<Transaction> transactionList = parseTransactions(doc);
-            return "";
+            List<Element> resultList = parseAndExecuteTransactions(doc, resultsDoc);
+            String resultString = createResultsReply(resultsDoc, resultList);
+            System.out.println(resultString);
+            return resultString;
         }else{
             throw new IllegalArgumentException("wrong xml template");
         }
@@ -106,54 +113,60 @@ public class XmlParser {
      * Parse transactions
      * @param doc is the DOM object for this request
      */
-    public List<Transaction> parseTransactions(Document doc) {
-        System.out.println("Transactions found");
+    public List<Element> parseAndExecuteTransactions(Document doc, Document results) {
+        List<Element> resultList = new ArrayList<>();
         Element element = doc.getDocumentElement();
-        // TODO: Go to the database to check whether the account id exists
-        String accountIDStr = checkHasAttributeAndGetIt(element, "id");
         Integer accountID = null;
+        Account account = null;
+        String accountIdErrorMsg = null;
         try {
+            String accountIDStr = checkHasAttributeAndGetIt(element, "id");
             accountID = Integer.parseInt(accountIDStr);
+            account = Database.checkAccountIdExistsAndGetIt(accountID);
         }
         catch (Exception e) {
-            throw new InvalidParameterException("Account ID is not an integer");
+            accountIdErrorMsg = "There is no account ID or account ID is invalid";
         }
 
         NodeList childNodes = element.getChildNodes();
-        List<Transaction> transactionList = new ArrayList<Transaction>();
+        if (childNodes.getLength() <= 0) {
+            resultList.add(createParsingErrorReply(results, "There must be at least one transaction"));
+            return resultList;
+        }
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node childNode = childNodes.item(i);
-            if (childNode.getNodeType() == Node.ELEMENT_NODE) {
+            if (childNode.getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            }
+            try {
+                if (accountIdErrorMsg != null) {
+                    throw new IllegalArgumentException(accountIdErrorMsg);
+                }
                 Element childElement = (Element) childNode;
                 Transaction transaction = null;
                 switch (childElement.getNodeName()) {
-                    case "order" -> transaction = parseOrderTransaction(accountID, childElement);
+                    case "order" -> transaction = parseOrderTransaction(account, childElement);
                     case "query" -> transaction = parseQueryTransaction(accountID, childElement);
                     case "cancel" -> transaction = parseCancelTransaction(accountID, childElement);
                     default -> throw new IllegalArgumentException("Transaction type " + childElement.getNodeName() + " is invalid");
                 }
-                transactionList.add(transaction);
-                // TODO: Should this part (execute transactions) be put into the Server class - run method? But
-                //      how to return error messages in order if it is in the Server class?
-                // TODO: Perhaps execute can return the result
-                transaction.execute();
+                resultList.add(transaction.execute(results));
+            }
+            catch (Exception e) {
+                resultList.add(createParsingErrorReply(results, e.getMessage()));
             }
         }
-
-        if (transactionList.size() <= 0) {
-            throw new IllegalArgumentException("There must be at least one child inside the transactions tag");
-        }
-        return transactionList;
+        return resultList;
     }
 
-    private OrderTransaction parseOrderTransaction(int accountId, Element element) {
+    private OrderTransaction parseOrderTransaction(Account account, Element element) {
         String sym = checkHasAttributeAndGetIt(element, "sym");
         String amountStr = checkHasAttributeAndGetIt(element, "amount");
         String limitStr = checkHasAttributeAndGetIt(element, "limit");
         try {
             double amount = Double.parseDouble(amountStr);
             double limit = Double.parseDouble(limitStr);
-            return new OrderTransaction(accountId, sym, amount, limit);
+            return new OrderTransaction(account, sym, amount, limit);
         }
         catch (Exception e) {
             throw new IllegalArgumentException("Invalid amount or limit value");
@@ -225,4 +238,31 @@ public class XmlParser {
         return res.toString();
     }
 
+    public Element createParsingErrorReply(Document results, String errorMsg) {
+        Element errorReply = results.createElement("error");
+        errorReply.appendChild(results.createTextNode("Parsing Error: " + errorMsg));
+        return errorReply;
+    }
+
+    public String createResultsReply(Document results, List<Element> resultList) {
+        try {
+            Element rootElement = results.createElement("results");
+            results.appendChild(rootElement);
+            for (Element resultElement : resultList) {
+                rootElement.appendChild(resultElement);
+            }
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            StringWriter writer = new StringWriter();
+            transformer.transform(new DOMSource(results), new StreamResult(writer));
+//            return DOMUtils.prettyPrint(results);
+            return writer.toString();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "<error>Cannot create a results reply</error>\n";
+    }
 }
