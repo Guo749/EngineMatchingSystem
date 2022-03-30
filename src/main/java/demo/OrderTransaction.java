@@ -10,31 +10,65 @@ import java.util.ArrayList;
 import java.util.List;
 import javafx.util.Pair;
 
+import javax.xml.crypto.Data;
+
 public class OrderTransaction implements Transaction {
-    private int accountId;
+    private Account account;
     private Order order;
 
-    public OrderTransaction(int accountId, String sym, double amount, double priceLimit) {
-        this.accountId = accountId;
+    public OrderTransaction(Account account, String sym, double amount, double priceLimit) {
+        this.account = account;
         this.order = new Order(sym, amount, priceLimit);
     }
 
     @Override
     public Element execute(Document results) {
-        // TODO: When a Buy order is placed, the total cost is deducted from the buyer’s account
-        // TODO: When a Sell order is placed, the shares are deducted from the seller's account
         Database.addOrder(order);
-        // The relatedOrder is sorted by price limit (descending)
-        List<Order> relatedOrders = Database.getOpenOrdersWithSym(order.getSym());
-        while (relatedOrders.size() > 1) {
-            Pair<Order, Order> matchedOrders = findMatchedOrders(relatedOrders);
-            if (matchedOrders == null) {
-                break;
+        Element openedResult = createOpenedResult(results);
+        try {
+            if (isBuyOrder()) {
+                deductBuyOrderCost();
             }
-            executeMatchedOrders(order, matchedOrders.getKey(), matchedOrders.getValue());
-            relatedOrders = Database.getOpenOrdersWithSym(order.getSym());
+            else {
+                deductSellOrderShares();
+            }
+            // The relatedOrder is sorted by price limit (descending)
+            List<Order> relatedOrders = Database.getOpenOrdersWithSym(order.getSym());
+            while (relatedOrders.size() > 1) {
+                Pair<Order, Order> matchedOrders = findMatchedOrders(relatedOrders);
+                if (matchedOrders == null) {
+                    break;
+                }
+                executeMatchedOrders(order, matchedOrders.getKey(), matchedOrders.getValue());
+                relatedOrders = Database.getOpenOrdersWithSym(order.getSym());
+            }
         }
-        return createOpenedResult(results);
+        catch (Exception e) {
+            return createErrorResult(results, e.getMessage());
+        }
+        return openedResult;
+    }
+
+    private boolean isBuyOrder () {
+        return order.getAmount() > 0;
+    }
+
+    private void deductBuyOrderCost() {
+        double totalCost = order.getAmount() * order.getPriceLimit();
+        if (account.getBalance() < totalCost) {
+            throw new IllegalArgumentException("The buyer's account does not have enough balance");
+        }
+        account.setBalance(account.getBalance() - totalCost);
+        SessionFactory sessionFactory = Database.getSessionFactory();
+        Session session = sessionFactory.openSession();
+        org.hibernate.Transaction tx = session.beginTransaction();
+        session.update(account);
+        tx.commit();
+        session.close();
+    }
+
+    private void deductSellOrderShares() {
+
     }
 
     /**
@@ -120,7 +154,7 @@ public class OrderTransaction implements Transaction {
             buyOrderToExecute.setPriceLimit(transactionPrice);
             sellOrderToExecute.setPriceLimit(transactionPrice);
 
-            // TODO: Change the seller’s account balance and the buyer’s number of shares
+            // TODO: Change the seller’s account balance and the buyer’s number of shares, and possibly refund some money to the buyer
 
             for (Order order : ordersToUpdate) {
                 session.update(order);
@@ -165,14 +199,21 @@ public class OrderTransaction implements Transaction {
         return opened;
     }
 
+    private Element createErrorResult(Document results, String errorMsg) {
+        Element error = results.createElement("error");
+        setOrderAttributes(error);
+        error.appendChild(results.createTextNode("Error when executing the order: " + errorMsg));
+        return error;
+    }
+
     private void setOrderAttributes(Element element) {
         element.setAttribute("sym", order.getSym());
         element.setAttribute("amount", Double.toString(order.getAmount()));
         element.setAttribute("limit", Double.toString(order.getPriceLimit()));
     }
 
-    public int getAccountId() {
-        return accountId;
+    public Account getAccount() {
+        return account;
     }
 
     public Order getOrder() {

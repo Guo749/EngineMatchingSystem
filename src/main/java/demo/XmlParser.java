@@ -54,8 +54,7 @@ public class XmlParser {
             cot.execute(resultsDoc);
             return formCreateReply(actions);
         }else if(TRANS_TAG.equals(rootEle)){// about <transactions> </tran>
-            // TODO: Should this be parseAndExecuteTransactions and return the execution results?
-            List<Element> resultList = parseTransactions(doc, resultsDoc);
+            List<Element> resultList = parseAndExecuteTransactions(doc, resultsDoc);
             String resultString = createResultsReply(resultsDoc, resultList);
             System.out.println(resultString);
             return resultString;
@@ -114,15 +113,16 @@ public class XmlParser {
      * Parse transactions
      * @param doc is the DOM object for this request
      */
-    public List<Element> parseTransactions(Document doc, Document results) {
+    public List<Element> parseAndExecuteTransactions(Document doc, Document results) {
         List<Element> resultList = new ArrayList<>();
         Element element = doc.getDocumentElement();
         Integer accountID = null;
+        Account account = null;
         String accountIdErrorMsg = null;
         try {
             String accountIDStr = checkHasAttributeAndGetIt(element, "id");
             accountID = Integer.parseInt(accountIDStr);
-            Database.checkAccountIdExists(accountID);
+            account = Database.checkAccountIdExistsAndGetIt(accountID);
         }
         catch (Exception e) {
             accountIdErrorMsg = "There is no account ID or account ID is invalid";
@@ -145,7 +145,7 @@ public class XmlParser {
                 Element childElement = (Element) childNode;
                 Transaction transaction = null;
                 switch (childElement.getNodeName()) {
-                    case "order" -> transaction = parseOrderTransaction(accountID, childElement);
+                    case "order" -> transaction = parseOrderTransaction(account, childElement);
                     case "query" -> transaction = parseQueryTransaction(accountID, childElement);
                     case "cancel" -> transaction = parseCancelTransaction(accountID, childElement);
                     default -> throw new IllegalArgumentException("Transaction type " + childElement.getNodeName() + " is invalid");
@@ -159,14 +159,14 @@ public class XmlParser {
         return resultList;
     }
 
-    private OrderTransaction parseOrderTransaction(int accountId, Element element) {
+    private OrderTransaction parseOrderTransaction(Account account, Element element) {
         String sym = checkHasAttributeAndGetIt(element, "sym");
         String amountStr = checkHasAttributeAndGetIt(element, "amount");
         String limitStr = checkHasAttributeAndGetIt(element, "limit");
         try {
             double amount = Double.parseDouble(amountStr);
             double limit = Double.parseDouble(limitStr);
-            return new OrderTransaction(accountId, sym, amount, limit);
+            return new OrderTransaction(account, sym, amount, limit);
         }
         catch (Exception e) {
             throw new IllegalArgumentException("Invalid amount or limit value");

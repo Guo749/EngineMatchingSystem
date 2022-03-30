@@ -181,10 +181,12 @@ public class XmlParserTest {
     @Test
     public void testParseOrderTransactions() throws ParserConfigurationException, IOException, SAXException, SQLException, ClassNotFoundException {
         Database.init();
-        Database.createAccount(new Account(156, "134"));
+        Database.createAccount(new Account(15634, "134"));
         String xml = "<?xml version = \"1.0\"?> <transactions id=\"134\"> <order sym=\"SPY\" amount=\"100\" limit=\"145.67\"/> </transactions>";
         XmlParser xmlParser = new XmlParser();
         xmlParser.processXML(xml);
+        Account account = Database.checkAccountIdExistsAndGetIt(134);
+        System.out.println(account.getBalance());
 //        List<Element> transactionList = getTransactionList(xml);
 
 //        assertEquals(1, transactionList.size());
@@ -233,7 +235,7 @@ public class XmlParserTest {
         doc.getDocumentElement().normalize();
 
         XmlParser xmlParser = new XmlParser();
-        return xmlParser.parseTransactions(doc, builder.newDocument());
+        return xmlParser.parseAndExecuteTransactions(doc, builder.newDocument());
     }
 
 

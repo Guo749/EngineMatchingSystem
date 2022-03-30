@@ -58,7 +58,7 @@ public class Database {
         }
     }
 
-    public static void checkAccountIdExists(int accountId) {
+    public static Account checkAccountIdExistsAndGetIt(int accountId) {
         List<Account> results = null;
         try {
             Session session = sessionFactory.openSession();
@@ -75,6 +75,7 @@ public class Database {
         if (results == null || results.size() <= 0) {
             throw new IllegalArgumentException("Account does not exist");
         }
+        return results.get(0);
     }
 
     /**

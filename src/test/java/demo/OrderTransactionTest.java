@@ -18,18 +18,19 @@ public class OrderTransactionTest {
         Database.init();
         Order buyOrder = new Order("BTC", 30, 90);
         Database.addOrder(buyOrder);
+        Account account = new Account(12343, "5533");
 
-        OrderTransaction transaction1 = new OrderTransaction(5345, "BTC", 5, 100);
+        OrderTransaction transaction1 = new OrderTransaction(account, "BTC", 5, 100);
         transaction1.execute(results);
         printAllOrders();
 
         System.out.println("-----------------------");
-        OrderTransaction transaction2 = new OrderTransaction(1455, "BTC", -60, 80);
+        OrderTransaction transaction2 = new OrderTransaction(account, "BTC", -60, 80);
         transaction2.execute(results);
         printAllOrders();
 
         System.out.println("-----------------------");
-        OrderTransaction transaction3 = new OrderTransaction(1455, "BTC", -40, 50);
+        OrderTransaction transaction3 = new OrderTransaction(account, "BTC", -40, 50);
         transaction3.execute(results);
         printAllOrders();
     }
