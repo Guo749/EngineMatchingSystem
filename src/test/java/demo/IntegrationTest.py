@@ -198,6 +198,14 @@ def writeToFile(msg, seq):
     textFile.close()
 
 def prepareDoc():
+    cmd = 'rm -rf /txt/*'
+    mkdir = 'mkdir -p txt'
+
+    os.system(cmd)
+    print("clear all files in txt")
+    os.system(mkdir)
+    print("make a clear /txt directory")
+
     for i in range(0, WORK_LOAD):
         msg = generateWorkLoad()
         writeToFile(msg, i)
@@ -292,7 +300,7 @@ def testBadRequest():
 def testTran():
     geneTranClause("STM", 123)
 
-    cmd = "./test.sh " + str(108) + " " + str(100)
+    cmd = "./test.sh " + str(108) + " " + str(101)
     os.system(cmd)
 
 """
@@ -346,5 +354,5 @@ def timeTest():
 
 if __name__ == '__main__':
     main()
-
+    #testTran()
 

@@ -17,6 +17,6 @@ do
   done
 done
 
-echo "nc localhost 12345 ./txt/msg[0-$c].txt done"
+echo "nc localhost 12345 ./txt/msg[$ARG2-$ARG1].txt done"
 wait
 echo "finish all sending command"
