@@ -191,12 +191,13 @@ public class OrderTransaction extends Transaction {
             // TODO: Set the time of execution
             buyOrderToExecute.setStatus(OrderStatus.EXECUTED);
             sellOrderToExecute.setStatus(OrderStatus.EXECUTED);
+            double priceDifference = buyOrder.getPriceLimit() - transactionPrice;
             buyOrderToExecute.setPriceLimit(transactionPrice);
             sellOrderToExecute.setPriceLimit(transactionPrice);
 
             creditSellerAccountBalance(session, sellOrderToExecute);
             creditBuyerAccountShares(session, buyOrderToExecute);
-            // TODO: The buyer's may have some refund
+            refundMoneyToBuyer(session, buyOrderToExecute, priceDifference);
 
             for (Order order : ordersToUpdate) {
                 session.update(order);
@@ -257,6 +258,13 @@ public class OrderTransaction extends Transaction {
             currentSymbol.setShare(currentSymbol.getShare() + executedBuyOrder.getAmount());
             session.update(currentSymbol);
         }
+    }
+
+    private void refundMoneyToBuyer(Session session, Order executedBuyOrder, double priceDifference) {
+        double moneyToRefund = priceDifference * executedBuyOrder.getAmount();
+        Account buyer = executedBuyOrder.getAccount();
+        buyer.setBalance(buyer.getBalance() + moneyToRefund);
+        session.update(buyer);
     }
 
     private Element createOpenedResult(Document results) {
