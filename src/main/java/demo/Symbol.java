@@ -22,6 +22,9 @@ public class Symbol {
     @javax.persistence.Basic
     public double share;
 
+    @Version
+    private long version;
+
     public Symbol(){}
 
 

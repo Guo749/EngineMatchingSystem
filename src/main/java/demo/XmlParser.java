@@ -233,7 +233,7 @@ public class XmlParser {
         }
         res.append("</result>\n");
 
-        System.out.println(res.toString());
+//        System.out.println(res.toString());
 
         return res.toString();
     }

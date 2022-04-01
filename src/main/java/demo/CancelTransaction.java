@@ -24,8 +24,12 @@ public class CancelTransaction extends Transaction {
         try (session) {
             org.hibernate.Transaction tx = session.beginTransaction();
             Order parentOrder = getOrderWithId(session, transactionId);
+            if (!parentOrder.getAccount().getAccountNum().equals(Integer.toString(accountId))) {
+                throw new IllegalArgumentException("You cannot cancel someone else's order");
+            }
             orderList = getAllRelatedOrders(parentOrder);
             tryCancelOrders(session, orderList);
+            session.flush();
             tx.commit();
         }
         catch (Exception e) {

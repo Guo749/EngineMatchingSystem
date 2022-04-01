@@ -9,6 +9,7 @@ import org.w3c.dom.Element;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import javafx.util.Pair;
 
@@ -49,6 +50,7 @@ public class OrderTransaction extends Transaction {
                 executeMatchedOrders(session, order, matchedOrders.getKey(), matchedOrders.getValue());
                 relatedOrders = getOpenOrdersWithSym(session, order.getSym());
             }
+            session.flush();
             tx.commit();
         }
         catch (Exception e) {

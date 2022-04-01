@@ -14,6 +14,9 @@ public class Account {
     @Basic
     private double balance;
 
+    @Version
+    private long version;
+
     public Account(){}
 
     public Account(double balance, String accountNum){

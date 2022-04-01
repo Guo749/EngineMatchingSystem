@@ -23,6 +23,9 @@ public class QueryTransaction extends Transaction {
         List<Order> orderList = null;
         try (session) {
             Order parentOrder = getOrderWithId(session, transactionId);
+            if (!parentOrder.getAccount().getAccountNum().equals(Integer.toString(accountId))) {
+                throw new IllegalArgumentException("You cannot query someone else's order");
+            }
             orderList = getAllRelatedOrders(parentOrder);
         }
         catch (Exception e) {
