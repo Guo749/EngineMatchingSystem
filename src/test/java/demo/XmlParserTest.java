@@ -234,6 +234,84 @@ public class XmlParserTest {
         System.out.println(account.getBalance());
     }
 
+    @Test
+    public void testComplexOrderTransactions() throws ParserConfigurationException, IOException, SAXException, SQLException, ClassNotFoundException {
+        Database.init();
+        // Create account 123 and 234, add 100 SPY to account 123
+        String xml = "<?xml version = \"1.0\"?> <create> <account id=\"123\" balance=\"15364\"/> " +
+                "<account id=\"234\" balance=\"56478\"/> " +
+                "<symbol sym=\"SPY\"> <account id=\"123\">100</account> </symbol>" +
+                "</create>";
+        XmlParser xmlParser = new XmlParser();
+        xmlParser.processXML(xml);
+
+        // Account 123 tries to sell 50 SPY (should success) and then 51 SPY (should fail)
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
+                "<order sym=\"SPY\" amount=\"-50\" limit=\"200\"/> " +
+                "<order sym=\"SPY\" amount=\"-51\" limit=\"14\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+
+        xml = "<?xml version = \"1.0\"?> <create> <account id=\"123\" balance=\"15364\"/> " +
+                "<symbol sym=\"BIT\"> <account id=\"345\">100</account> </symbol>" +
+                "<account id=\"345\" balance=\"99999\"/> " +
+                "<symbol sym=\"BIT\"> <account id=\"345\">300</account> </symbol>" +
+                "</create>";
+        xmlParser.processXML(xml);
+
+        // Account 234 tries to buy 20 SPY (should success)
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" +
+                "<order sym=\"SPY\" amount=\"20\" limit=\"210\"/> " +
+                "<order sym=\"BIT\" amount=\"50\" limit=\"100\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+
+        // Account 123 tries to query the status of the first order (should be -30 open and 20 executed)
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
+                "<order sym=\"SPY\" amount=\"-10\" limit=\"300\"/> " +
+                "<order sym=\"BIT\" amount=\"150\" limit=\"90\"/> " +
+                "<query id=\"2\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"345\">" +
+                "<order sym=\"BIT\" amount=\"-120\" limit=\"80\"/> " +
+                "<order sym=\"BIT\" amount=\"-120\" /> " +
+                "<order sym=\"BIT\" limit=\"80\"/> " +
+                "<order amount=\"-120\" limit=\"80\"/> " +
+                "<order sm=\"BIT\" amount=\"-120\" limit=\"80\"/> " +
+                "<order sym=\"BIT\" amount=\"a\" limit=\"80\"/> " +
+                "<order sym=\"BIT\" amount=\"-110\" limit=\"b\"/> " +
+                "<cancel id=\"10\"/> " +
+                "<cancel id=\"100\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" +
+                "<order sym=\"SPY\" amount=\"35\" limit=\"400\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"345\">" +
+                "<query id=\"2\"/> " +
+                "<query id=\"5\"/> " +
+                "<query id=\"9\"/> " +
+                "<query id=\"15\"/> " +
+                "<query id=\"8\"/> " +
+                "<query id=\"10\"/> " +
+                "<query id=\"11\"/> " +
+                "<query id=\"91\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+
+        Account account = Database.checkAccountIdExistsAndGetIt(123);
+        System.out.println(account.getBalance());
+        account = Database.checkAccountIdExistsAndGetIt(234);
+        System.out.println(account.getBalance());
+        account = Database.checkAccountIdExistsAndGetIt(345);
+        System.out.println(account.getBalance());
+    }
+
     /*********************** Helper Method **********************************/
 
     private List<Element> getTransactionList(String xml) throws ParserConfigurationException, IOException, SAXException {

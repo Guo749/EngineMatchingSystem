@@ -27,8 +27,7 @@ public class OrderTransaction extends Transaction {
 
     @Override
     public Element execute(Document results) {
-        Database.addOrder(order);
-        Element openedResult = createOpenedResult(results);
+        Element openedResult = null;
         SessionFactory sessionFactory = Database.getSessionFactory();
         Session session = sessionFactory.openSession();
         try (session) {
@@ -38,6 +37,8 @@ public class OrderTransaction extends Transaction {
             } else {
                 deductSellOrderShares(session);
             }
+            session.save(order);
+            openedResult = createOpenedResult(results);
             // The relatedOrder is sorted by price limit (descending)
             List<Order> relatedOrders = getOpenOrdersWithSym(session, order.getSym());
             while (relatedOrders.size() > 1) {
@@ -113,6 +114,7 @@ public class OrderTransaction extends Transaction {
      * Try to find two orders that can be matched and executed from the order list
      * @param orders is the order list
      * @return a pair of orders. The key is the Buy order, and the value is the Sell order
+     * TODO: Confirming the meaning of best price match
      */
     private Pair<Order, Order> findMatchedOrders(List<Order> orders) {
         Integer firstBuyOrderIndex = null;
@@ -127,19 +129,18 @@ public class OrderTransaction extends Transaction {
             return null;
         }
         // Find the first Sell order after the Buy order
-        Integer firstSellOrderIndex = null;
+        Integer lastSellOrderIndex = null;
         for (int i = firstBuyOrderIndex + 1; i < orders.size(); i++) {
             if (orders.get(i).getAmount() < 0 && isValidOrder(orders.get(i))) {
-                firstSellOrderIndex = i;
-                break;
+                lastSellOrderIndex = i;
             }
         }
         // There is no Sell order after the first Buy order => Cannot match any orders
-        if (firstSellOrderIndex == null) {
+        if (lastSellOrderIndex == null) {
             return null;
         }
         // Already got a Buy order and a Sell order => Match them
-        return new Pair<>(orders.get(firstBuyOrderIndex), orders.get(firstSellOrderIndex));
+        return new Pair<>(orders.get(firstBuyOrderIndex), orders.get(lastSellOrderIndex));
     }
 
     private boolean isValidOrder(Order orderToCheck) {
@@ -188,12 +189,14 @@ public class OrderTransaction extends Transaction {
             }
 
             // If buyOrder amount == sellOrder amount, the buy/sellOrderToExecute is unchanged (original buy/sellOrder)
-            // TODO: Set the time of execution
             buyOrderToExecute.setStatus(OrderStatus.EXECUTED);
             sellOrderToExecute.setStatus(OrderStatus.EXECUTED);
             double priceDifference = buyOrder.getPriceLimit() - transactionPrice;
             buyOrderToExecute.setPriceLimit(transactionPrice);
             sellOrderToExecute.setPriceLimit(transactionPrice);
+            // Set the time in Order to current time (executed time)
+            buyOrderToExecute.setTimeToNow();
+            sellOrderToExecute.setTimeToNow();
 
             creditSellerAccountBalance(session, sellOrderToExecute);
             creditBuyerAccountShares(session, buyOrderToExecute);

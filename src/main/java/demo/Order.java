@@ -57,6 +57,10 @@ public class Order {
         childOrder.parentOrder = this;
     }
 
+    public void setTimeToNow() {
+        time = Instant.now().getEpochSecond();
+    }
+
     public int getId() {
         return id;
     }

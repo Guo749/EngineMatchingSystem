@@ -175,7 +175,6 @@ public class XmlParser {
 
     private QueryTransaction parseQueryTransaction(int accountId, Element element) {
         String transactionIdStr = checkHasAttributeAndGetIt(element, "id");
-        // TODO: Check whether this id exists in the database
         try {
             int transactionId = Integer.parseInt(transactionIdStr);
             return new QueryTransaction(accountId, transactionId);
@@ -187,7 +186,6 @@ public class XmlParser {
 
     private CancelTransaction parseCancelTransaction(int accountId, Element element) {
         String transactionIdStr = checkHasAttributeAndGetIt(element, "id");
-        // TODO: Check whether this id exists in the database
         try {
             int transactionId = Integer.parseInt(transactionIdStr);
             return new CancelTransaction(accountId, transactionId);
@@ -234,6 +232,8 @@ public class XmlParser {
             }
         }
         res.append("</result>\n");
+
+        System.out.println(res.toString());
 
         return res.toString();
     }
