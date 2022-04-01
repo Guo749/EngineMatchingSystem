@@ -96,9 +96,11 @@ These kinds of problems may not crash our program because we have many try-catch
 
 
 
+# 6 Message Length
 
+We did not explicitly deal with the case that the message length given by the user does not match the actual length of the message (or the format of the message is not XML), as Prof. Brain said we could assume the message length is correct in Ed. 
 
-
+However, in a real system, we should consider these cases to make the software more robust.
 
 
 
