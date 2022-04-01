@@ -56,7 +56,7 @@ public class XmlParser {
         }else if(TRANS_TAG.equals(rootEle)){// about <transactions> </tran>
             List<Element> resultList = parseAndExecuteTransactions(doc, resultsDoc);
             String resultString = createResultsReply(resultsDoc, resultList);
-            System.out.println(resultString);
+//            System.out.println(resultString);
             return resultString;
         }else{
             throw new IllegalArgumentException("wrong xml template");

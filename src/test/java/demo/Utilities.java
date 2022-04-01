@@ -23,7 +23,7 @@ public class Utilities {
             String msg = generateWorkLoad();
             writeToFileWithLen(msg, i);
         }
-        System.out.println("holy fucking shit");
+        System.out.println("test main finished");
     }
 
     private static void writeToFileWithLen(String msg, int seq) throws IOException {
