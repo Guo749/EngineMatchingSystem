@@ -76,13 +76,13 @@ We could improve on that by adding Encryption Action or Hashing.
 
 
 
-# 4 Anyone can query or cancel any orders
+# 4 User Permissions
 
-Currently, we are not restricting users to only be able to query or cancel their own orders (since the requirement doc does not require us to do this check), which means as long as the given user id is valid, the user can query or cancel any order by giving a valid order id.
+Previously, we did not restrict users to only be able to query or cancel their own orders (since the requirement doc does not require us to do this check), which means as long as the given user id is valid, the user can query or cancel any order by giving a valid order id.
 
-It does not really matter in this course project because we are not doing user authentication and the client can be any user anyway.
+Now we have added this restriction, which means users can only query/cancel their own orders, and we will report an error if a user is trying to cancel/query someone else's orders.
 
-But in a real system, we will want to make sure there is a user authentication system and give every user appropriate permissions (only give it the permissions it needs).
+However, in this project, we do not have any user authentication, and anyone can act as any user as long as it uses that user's account id. But in a real system, we will want to make sure there is a user authentication system and give every user appropriate permissions (only give it the permissions it needs).
 
 
 
