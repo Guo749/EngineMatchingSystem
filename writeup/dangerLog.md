@@ -41,7 +41,7 @@ Right now we only have one server being deployed. If this server is down due to 
 
 
 
-Thus we could have 3-5 servers coordiating using Paxos Protocol
+Thus, we could have 3-5 servers coordinating using Paxos Protocol
 
 <img src="dangerLog.assets/image-20220331143432437.png" alt="image-20220331143432437" style="zoom:50%;" />
 
@@ -69,19 +69,29 @@ Right now we have the XML format of request, like
 
 
 
-But we could suffer from Man-In-The-Middle Attack where they can acqure what client has asked for.
+But we could suffer from Man-In-The-Middle Attack where they can acquire what client has asked for.
 
 We could improve on that by adding Encryption Action or Hashing.
 
 
 
 
+# 4 Anyone can query or cancel any orders
+
+Currently, we are not restricting users to only be able to query or cancel their own orders (since the requirement doc does not require us to do this check), which means as long as the given user id is valid, the user can query or cancel any order by giving a valid order id.
+
+It does not really matter in this course project because we are not doing user authentication and the client can be any user anyway.
+
+But in a real system, we will want to make sure there is a user authentication system and give every user appropriate permissions (only give it the permissions it needs).
 
 
 
 
+# 5 Input Sanitization
 
+We are using Hibernate to interact with the database, and some attacks, such as SQL injection attacks, should be able to be defended. However, if the user gives some special input (e.g., an extremely looong 10000-char symbol name), there will still be exceptions (because the symbol name field in the database table is a char array with length 255). 
 
+These kinds of problems may not crash our program because we have many try-catch clauses to catch exceptions, but we have not addressed them gracefully (e.g., give informational error messages).
 
 
 

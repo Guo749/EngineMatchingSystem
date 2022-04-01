@@ -40,6 +40,8 @@ public class CancelTransaction extends Transaction {
             if (order.getStatus() == OrderStatus.OPEN) {
                 hasOrderToCancel = true;
                 order.setStatus(OrderStatus.CANCELED);
+                // Set the time in the order to be current time (canceled time)
+                order.setTimeToNow();
                 session.update(order);
             }
         }
