@@ -8,6 +8,7 @@ import org.junit.platform.commons.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import javax.xml.crypto.Data;
 import javax.xml.parsers.DocumentBuilder;
@@ -75,8 +76,8 @@ public class XmlParserTest {
 
         String res2 = xmlParser.processXML(xml);
 
-        assert(!res1.contains("ACCOUNT HAS EXISTED"));
-        assert(res2.contains("ACCOUNT HAS EXISTED"));
+        assert(!res1.contains("Account already exists"));
+        assert(res2.contains("Account already exists"));
     }
 
     @Test
@@ -155,7 +156,7 @@ public class XmlParserTest {
 //            """;
 
         XmlParser xmlParser = new XmlParser();
-        assertThrows(IllegalArgumentException.class, () -> xmlParser.processXML(xml));
+        assertThrows(SAXParseException.class, () -> xmlParser.processXML(xml));
     }
 
     @Test
@@ -188,45 +189,45 @@ public class XmlParserTest {
                 "<symbol sym=\"SPY\"> <account id=\"123\">100</account> </symbol>" +
                 "</create>";
         XmlParser xmlParser = new XmlParser();
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         // Account 123 tries to sell 50 SPY (should success) and then 51 SPY (should fail)
         xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
                 "<order sym=\"SPY\" amount=\"-50\" limit=\"200\"/> " +
                 "<order sym=\"SPY\" amount=\"-51\" limit=\"14\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         // Account 234 tries to buy 20 SPY (should success)
         xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" +
                 "<order sym=\"SPY\" amount=\"20\" limit=\"210\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         // Account 123 tries to query the status of the first order (should be -30 open and 20 executed)
         xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
                 "<order sym=\"SPY\" amount=\"-10\" limit=\"14\"/> " +
                 "<query id=\"2\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         // Account 123 tries to cancel the first order (should be -30 canceled and 20 executed)
         xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
                 "<cancel id=\"2\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         // Account 123 tries to cancel the first order (should fail because there is no open order)
         xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" +
                 "<cancel id=\"2\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         // Account 123 tries to query the status of the first order again (should be -30 canceled and 20 executed)
         xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
                 "<query id=\"2\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         Account account = Database.checkAccountIdExistsAndGetIt(123);
         System.out.println(account.getBalance());
@@ -243,28 +244,28 @@ public class XmlParserTest {
                 "<symbol sym=\"SPY\"> <account id=\"123\">100</account> </symbol>" +
                 "</create>";
         XmlParser xmlParser = new XmlParser();
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         // Account 123 tries to sell 50 SPY (should success) and then 51 SPY (should fail)
         xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
                 "<order sym=\"SPY\" amount=\"-50\" limit=\"200\"/> " +
                 "<order sym=\"SPY\" amount=\"-51\" limit=\"14\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         xml = "<?xml version = \"1.0\"?> <create> <account id=\"123\" balance=\"15364\"/> " +
                 "<symbol sym=\"BIT\"> <account id=\"345\">100</account> </symbol>" +
                 "<account id=\"345\" balance=\"99999\"/> " +
                 "<symbol sym=\"BIT\"> <account id=\"345\">300</account> </symbol>" +
                 "</create>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         // Account 234 tries to buy 20 SPY (should success)
         xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" +
                 "<order sym=\"SPY\" amount=\"20\" limit=\"210\"/> " +
                 "<order sym=\"BIT\" amount=\"50\" limit=\"100\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         // Account 123 tries to query the status of the first order (should be -30 open and 20 executed)
         xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
@@ -272,7 +273,7 @@ public class XmlParserTest {
                 "<order sym=\"BIT\" amount=\"150\" limit=\"90\"/> " +
                 "<query id=\"2\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         xml = "<?xml version = \"1.0\"?> <transactions id=\"345\">" +
                 "<order sym=\"BIT\" amount=\"-120\" limit=\"80\"/> " +
@@ -285,12 +286,12 @@ public class XmlParserTest {
                 "<cancel id=\"10\"/> " +
                 "<cancel id=\"100\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" +
                 "<order sym=\"SPY\" amount=\"35\" limit=\"400\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
                 "<query id=\"2\"/> " +
@@ -302,7 +303,7 @@ public class XmlParserTest {
                 "<query id=\"11\"/> " +
                 "<query id=\"91\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" +
                 "<query id=\"2\"/> " +
@@ -314,7 +315,7 @@ public class XmlParserTest {
                 "<query id=\"11\"/> " +
                 "<query id=\"91\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         xml = "<?xml version = \"1.0\"?> <transactions id=\"345\">" +
                 "<query id=\"2\"/> " +
@@ -326,7 +327,7 @@ public class XmlParserTest {
                 "<query id=\"11\"/> " +
                 "<query id=\"91\"/> " +
                 "</transactions>";
-        xmlParser.processXML(xml);
+        System.out.println(xmlParser.processXML(xml));
 
         Account account = Database.checkAccountIdExistsAndGetIt(123);
         System.out.println(account.getBalance());
