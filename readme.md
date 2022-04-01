@@ -80,7 +80,7 @@ This is the sample of how we generate test cases
 
 ## 3.3 Performance Test
 
-
+Please refer to the writeup/report.pdf for details.
 
 
 
