@@ -43,21 +43,6 @@ public class Database {
         return sessionFactory;
     }
 
-    /**
-     * Test Method, used to create account
-     */
-    public static void createAccount(Account account){
-        try{
-            Session session = sessionFactory.openSession();
-            org.hibernate.Transaction tx = session.beginTransaction();
-            session.save(account);
-            tx.commit();
-            session.close();
-        }catch (Exception e){
-
-        }
-    }
-
     public static Account checkAccountIdExistsAndGetIt(int accountId) {
         List<Account> results = null;
         try {
@@ -76,84 +61,6 @@ public class Database {
             throw new IllegalArgumentException("Account does not exist");
         }
         return results.get(0);
-    }
-
-    /**
-     * Used to add an order to the database
-     * @param order is the order to add to the database
-     */
-    public static void addOrder(Order order) {
-        try {
-            Session session = sessionFactory.openSession();
-            org.hibernate.Transaction tx = session.beginTransaction();
-            session.save(order);
-            tx.commit();
-            session.close();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void addSymbol(Symbol symbol) {
-        try {
-            Session session = sessionFactory.openSession();
-            org.hibernate.Transaction tx = session.beginTransaction();
-            session.save(symbol);
-            tx.commit();
-            session.close();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static List<Order> getOrdersWithId(String id) {
-        List<Order> results = new ArrayList<Order>();
-        try {
-            Session session = sessionFactory.openSession();
-            CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<Order> criteria = builder.createQuery(Order.class);
-            Root<Order> root = criteria.from(Order.class);
-            criteria.select(root).where(builder.equal(root.get("id"), id));
-            results = session.createQuery(criteria).getResultList();
-            session.close();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return results;
-    }
-
-    public static void updateOrders(List<Order> orders) {
-        try {
-            Session session = sessionFactory.openSession();
-            org.hibernate.Transaction tx = session.beginTransaction();
-            for (Order order : orders) {
-                session.update(order);
-            }
-            tx.commit();
-            session.close();
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Test Method, used to print all orders in the database
-     */
-    public static List<Order> getAllOrders() {
-        try {
-            Session session = sessionFactory.openSession();
-            CriteriaBuilder builder = session.getCriteriaBuilder();
-            CriteriaQuery<Order> criteria = builder.createQuery(Order.class);
-            criteria.from(Order.class);
-            return session.createQuery(criteria).getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     /****************** initialize the table when DB is booted   **********************/

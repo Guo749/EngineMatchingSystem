@@ -83,6 +83,7 @@ public class CreateOrderTransaction extends Transaction{
                 }
             }
 
+            session.flush();
             tx.commit();
         } catch (Exception e) {
             e.printStackTrace();

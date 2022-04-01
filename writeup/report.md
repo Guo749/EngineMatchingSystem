@@ -51,7 +51,7 @@ Test Script Location: `erss-hm4-xz295-wg83/src/test/java/demo/IntegrationTest.sh
 
 ## 2.2 Workload Test With Bad Request Noise
 
-We can forsee once the service is online, there might be some clients sending bad request.
+We can force once the service is online, there might be some clients sending bad request.
 
 Thus we test under such nodes, if server lowers its performance
 
@@ -59,7 +59,7 @@ Thus we test under such nodes, if server lowers its performance
 
 > **Method**
 
-* We have launced a bad request thread, which every 0.5 seconds will issue 5X clients to send bad requests
+* We have launched a bad request thread, which every 0.5 seconds will issue 5X clients to send bad requests
 
 <img src="report.assets/image-20220330183718343.png" alt="image-20220330183718343" style="zoom:50%;" />
 
@@ -90,4 +90,42 @@ The basic setup is
 * We can see as the number of cores increase, the time it spends will be shorter
 * but it won't be twice, or four times shorter compared to one core.
     * the main reason could be contention increasing and it takes longer to acquire the lock
+
+
+
+
+## 2.4 Database Concurrency Test
+
+* We used Hibernate's optimistic concurrency control to solve the database concurrency problem.
+* To make sure it works well, we tested it by manually changing the data in the database to simulate the case that multiple threads are changing the same data concurrently.
+  * In our code, after reading the data from the database, and before writing the modified data back to the database, we added a sleep to allow us to have enough time to change the data manually.
+    ```
+    // In OrderTransaction.java
+    List<Order> relatedOrders = getOpenOrdersWithSym(session, order.getSym());
+    // We have got the orders from the database
+    System.out.println("Time to manually modify the data");
+    // Now it's time to manually change the data
+    TimeUnit.SECONDS.sleep(3);
+    // The data has been manually changed, the normal operation is continued (execute the order and write some modified data back to the database)
+    ```
+  * When the code is sleeping, we manually change the data in the database:
+    ```
+    postgres=# update orders set version = 5 where id = 2;
+    UPDATE 1
+    ```
+* Here is the result
+  <img src="report.assets/concurrencyTest.png" alt="concurrencyTest" style="zoom:50%;" />
+  The screenshot clearly shows that Hibernate can help us report an error when the data is modified in the middle of a transaction, and our program successfully reports the error and continue the execution to fulfill further user requests.
+
+
+
+
+
+
+
+
+
+
+
+
 

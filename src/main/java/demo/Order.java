@@ -41,6 +41,9 @@ public class Order {
     @Basic
     private long time;
 
+    @Version
+    private long version;
+
     public Order() {}
 
     public Order(Account account, String sym, double amount, double priceLimit) {

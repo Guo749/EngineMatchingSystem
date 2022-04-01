@@ -217,7 +217,7 @@ public class XmlParserTest {
         xmlParser.processXML(xml);
 
         // Account 123 tries to cancel the first order (should fail because there is no open order)
-        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" +
                 "<cancel id=\"2\"/> " +
                 "</transactions>";
         xmlParser.processXML(xml);
@@ -289,6 +289,30 @@ public class XmlParserTest {
 
         xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" +
                 "<order sym=\"SPY\" amount=\"35\" limit=\"400\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"123\">" +
+                "<query id=\"2\"/> " +
+                "<query id=\"5\"/> " +
+                "<query id=\"9\"/> " +
+                "<query id=\"15\"/> " +
+                "<query id=\"8\"/> " +
+                "<query id=\"10\"/> " +
+                "<query id=\"11\"/> " +
+                "<query id=\"91\"/> " +
+                "</transactions>";
+        xmlParser.processXML(xml);
+
+        xml = "<?xml version = \"1.0\"?> <transactions id=\"234\">" +
+                "<query id=\"2\"/> " +
+                "<query id=\"5\"/> " +
+                "<query id=\"9\"/> " +
+                "<query id=\"15\"/> " +
+                "<query id=\"8\"/> " +
+                "<query id=\"10\"/> " +
+                "<query id=\"11\"/> " +
+                "<query id=\"91\"/> " +
                 "</transactions>";
         xmlParser.processXML(xml);
 
