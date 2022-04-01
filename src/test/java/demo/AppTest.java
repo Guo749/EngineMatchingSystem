@@ -20,18 +20,6 @@ public class AppTest {
     @Description("Integration Test")
     public void integrationTest() throws IOException, InterruptedException {
         /* if we want to run this, we need to make sure db service is on*/
-        new Thread(() -> {
-            Server server = null;
-            try {
-
-                server = new Server(12345);
-                server.run();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }).start();
-
 
         //make sure the server is booted
         Thread.sleep(5000);
