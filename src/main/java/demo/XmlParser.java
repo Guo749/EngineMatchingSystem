@@ -213,7 +213,7 @@ public class XmlParser {
      */
     public String formCreateReply(List<Command> actions) {
         StringBuilder res = new StringBuilder();
-        res.append("<result>\n");
+        res.append("<results>\n");
         for(Command command : actions){
             if(command instanceof CreateAccount){
                 CreateAccount ca = (CreateAccount) command;
@@ -231,7 +231,7 @@ public class XmlParser {
                 }
             }
         }
-        res.append("</result>\n");
+        res.append("</results>\n");
 
 //        System.out.println(res.toString());
 
