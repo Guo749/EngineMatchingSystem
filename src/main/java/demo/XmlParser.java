@@ -227,7 +227,7 @@ public class XmlParser {
                 if(ps.successfulExecute){
                     res.append("<created sym=\"").append(ps.symbol).append("\" id=\"").append(ps.account.getAccountNum()).append("\"/>\n");
                 }else{
-                    res.append("<error sym=SYM id=\"").append(ps.account.getAccountNum()).append("\">").append("ACCOUNT DOES NOT EXIST").append("</error>\n");
+                    res.append("<error sym=\"").append(ps.symbol).append("\" id=\"").append(ps.account.getAccountNum()).append("\">").append("ACCOUNT DOES NOT EXIST").append("</error>\n");
                 }
             }
         }
